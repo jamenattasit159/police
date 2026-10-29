@@ -1,0 +1,11 @@
+.env
+data/raw/
+node_modules/
+frontend/node_modules/
+frontend/dist/
+backend/server*
+*.exe
+.claude/
+.impeccable/
+.DS_Store
+Thumbs.db
