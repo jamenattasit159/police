@@ -45,8 +45,17 @@ func main() {
 	a.routes(mux)
 	mux.Handle("/", spa(envOr("STATIC_DIR", "../frontend/dist")))
 
+	addr := os.Getenv("ADDR")
+	if addr == "" {
+		if p := os.Getenv("PORT"); p != "" {
+			addr = ":" + p
+		} else {
+			addr = ":8080"
+		}
+	}
+
 	srv := &http.Server{
-		Addr:              envOr("ADDR", ":8080"),
+		Addr:              addr,
 		Handler:           securityHeaders(mux),
 		ReadHeaderTimeout: 5 * time.Second, // slowloris
 		ReadTimeout:       15 * time.Second,
