@@ -58,6 +58,7 @@ function clusterIcon(c: L.MarkerCluster) {
 
 export default function MapPage({ me, stations }: { me: Me; stations: Station[] }) {
   const [suspects, setSuspects] = useState<Suspect[]>([])
+  const [loading, setLoading] = useState(true)
   const [geo, setGeo] = useState<FeatureCollection | null>(null)
   const [mask, setMask] = useState<Feature | null>(null)
   const [map, setMap] = useState<L.Map | null>(null)
@@ -73,10 +74,12 @@ export default function MapPage({ me, stations }: { me: Me; stations: Station[] 
   const markers = useRef<Record<number, L.Marker>>({})
   const cluster = useRef<L.MarkerClusterGroup>(null)
 
-  const load = () =>
+  const load = () => {
     api<Suspect[]>('/suspects')
       .then(setSuspects)
       .catch((e) => setError(e.message))
+      .finally(() => setLoading(false))
+  }
 
   useEffect(() => {
     load()
@@ -460,37 +463,53 @@ export default function MapPage({ me, stations }: { me: Me; stations: Station[] 
             )}
 
             <ul className="suspect-list">
-              {visible.map((s) => (
-                <li key={s.id}>
-                  <button
-                    className={`suspect-card-btn level-${s.level}`}
-                    onClick={() => focus(s)}
-                    title="แตะเพื่อดูตำแหน่งบนแผนที่"
-                  >
-                    <div className="card-top">
-                      <span className="card-name">{s.full_name}</span>
-                      <span className={`level-tag ${s.level}`}>ระดับ{levelOf(s.level).label}</span>
+              {loading && suspects.length === 0 ? (
+                Array.from({ length: 6 }).map((_, i) => (
+                  <li key={i} className="suspect-card-btn skeleton-card" style={{ padding: 12, display: 'flex', flexDirection: 'column', gap: 8 }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                      <div className="skeleton-line" style={{ width: '45%', height: 16 }} />
+                      <div className="skeleton-line" style={{ width: '22%', height: 16 }} />
                     </div>
-                    {s.citizen_id && (
-                      <div style={{ fontSize: '0.78rem', color: 'var(--text-muted)', fontVariantNumeric: 'tabular-nums' }}>
-                        เลขบัตร: {formatCitizenId(s.citizen_id)}
+                    <div className="skeleton-line" style={{ width: '75%', height: 13 }} />
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                      <div className="skeleton-line" style={{ width: '35%', height: 13 }} />
+                      <div className="skeleton-line" style={{ width: '18%', height: 13 }} />
+                    </div>
+                  </li>
+                ))
+              ) : (
+                visible.map((s) => (
+                  <li key={s.id}>
+                    <button
+                      className={`suspect-card-btn level-${s.level}`}
+                      onClick={() => focus(s)}
+                      title="แตะเพื่อดูตำแหน่งบนแผนที่"
+                    >
+                      <div className="card-top">
+                        <span className="card-name">{s.full_name}</span>
+                        <span className={`level-tag ${s.level}`}>ระดับ{levelOf(s.level).label}</span>
                       </div>
-                    )}
-                    <div className="card-charge">{s.charge}</div>
-                    <div className="card-meta">
-                      <span className="card-station">
-                        <IconBuilding width={11} height={11} />
-                        {s.station_name}
-                      </span>
-                      <span className="card-view-hint">
-                        <span>ดูหมุด</span>
-                        <IconChevronRight width={12} height={12} />
-                      </span>
-                    </div>
-                  </button>
-                </li>
-              ))}
-              {visible.length === 0 && (
+                      {s.citizen_id && (
+                        <div style={{ fontSize: '0.78rem', color: 'var(--text-muted)', fontVariantNumeric: 'tabular-nums' }}>
+                          เลขบัตร: {formatCitizenId(s.citizen_id)}
+                        </div>
+                      )}
+                      <div className="card-charge">{s.charge}</div>
+                      <div className="card-meta">
+                        <span className="card-station">
+                          <IconBuilding width={11} height={11} />
+                          {s.station_name}
+                        </span>
+                        <span className="card-view-hint">
+                          <span>ดูหมุด</span>
+                          <IconChevronRight width={12} height={12} />
+                        </span>
+                      </div>
+                    </button>
+                  </li>
+                ))
+              )}
+              {!loading && visible.length === 0 && (
                 <li className="muted small" style={{ textAlign: 'center', padding: '36px 16px' }}>
                   ไม่พบรายการผู้ต้องหา
                 </li>

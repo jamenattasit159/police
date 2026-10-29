@@ -30,11 +30,16 @@ export default function App() {
   if (me === undefined) {
     return (
       <div className="center magic-dots">
-        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 12 }}>
-          <div className="brand-icon" style={{ width: 44, height: 44 }}>
-            <IconShield width={22} height={22} />
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 16 }}>
+          <div className="brand-icon-loading">
+            <div className="brand-icon" style={{ width: 48, height: 48 }}>
+              <IconShield width={24} height={24} />
+            </div>
           </div>
-          <span className="muted" style={{ fontWeight: 500, fontSize: '0.9rem' }}>กำลังเชื่อมต่อระบบ…</span>
+          <div className="loading-badge-pill">
+            <span className="spinner-mini" />
+            <span>กำลังเชื่อมต่อระบบสารสนเทศภูมิศาสตร์สืบสวน…</span>
+          </div>
         </div>
       </div>
     )

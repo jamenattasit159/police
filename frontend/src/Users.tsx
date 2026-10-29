@@ -16,14 +16,17 @@ const empty: Form = { username: '', password: '', full_name: '', role: 'officer'
 
 export default function Users({ me, stations }: { me: Me; stations: Station[] }) {
   const [users, setUsers] = useState<UserRow[]>([])
+  const [loading, setLoading] = useState(true)
   const [form, setForm] = useState<Form | null>(null)
   const [error, setError] = useState('')
   const [busy, setBusy] = useState(false)
 
-  const load = () =>
+  const load = () => {
     api<UserRow[]>('/users')
       .then(setUsers)
       .catch((e) => setError(e.message))
+      .finally(() => setLoading(false))
+  }
 
   useEffect(() => {
     load()
@@ -200,8 +203,19 @@ export default function Users({ me, stations }: { me: Me; stations: Station[] })
               </tr>
             </thead>
             <tbody>
-              {users.map((u) => (
-                <tr key={u.id} className={u.active ? '' : 'inactive'}>
+              {loading && users.length === 0
+                ? Array.from({ length: 5 }).map((_, i) => (
+                    <tr key={i}>
+                      <td><div className="skeleton-line" style={{ width: 80 }} /></td>
+                      <td><div className="skeleton-line" style={{ width: 140 }} /></td>
+                      <td><div className="skeleton-line" style={{ width: 70 }} /></td>
+                      <td><div className="skeleton-line" style={{ width: 110 }} /></td>
+                      <td><div className="skeleton-line" style={{ width: 60 }} /></td>
+                      <td style={{ textAlign: 'right' }}><div className="skeleton-line" style={{ width: 50, marginLeft: 'auto' }} /></td>
+                    </tr>
+                  ))
+                : users.map((u) => (
+                  <tr key={u.id} className={u.active ? '' : 'inactive'}>
                   <td>
                     <code style={{ fontSize: '0.88rem', fontWeight: 600, color: 'var(--text-main)' }}>
                       {u.username}

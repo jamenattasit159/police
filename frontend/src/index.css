@@ -1337,6 +1337,107 @@ input:focus, select:focus, textarea:focus {
 }
 
 /* =========================================
+   MAGIC UI SKELETON & MODERN LOADING
+   ========================================= */
+@keyframes skeleton-shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+.skeleton-shimmer,
+.skeleton-line,
+.skeleton-square,
+.skeleton-title,
+.skeleton-subtitle,
+.skeleton-big-num {
+  background: linear-gradient(
+    90deg,
+    rgba(228, 228, 231, 0.5) 0%,
+    rgba(244, 244, 245, 0.95) 50%,
+    rgba(228, 228, 231, 0.5) 100%
+  );
+  background-size: 200% 100%;
+  animation: skeleton-shimmer 1.8s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  border-radius: var(--radius-sm);
+}
+
+.skeleton-title {
+  width: 220px;
+  height: 24px;
+  border-radius: 6px;
+  margin-bottom: 8px;
+}
+
+.skeleton-subtitle {
+  width: 340px;
+  max-width: 80%;
+  height: 14px;
+  border-radius: 4px;
+}
+
+.skeleton-big-num {
+  width: 80px;
+  height: 38px;
+  border-radius: 8px;
+  margin: 6px 0;
+}
+
+.skeleton-card {
+  pointer-events: none;
+  border-color: rgba(0, 0, 0, 0.05);
+}
+
+.loading-badge-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: #ffffff;
+  border: 1px solid var(--border-base);
+  box-shadow: var(--shadow-ambient);
+  padding: 6px 14px;
+  border-radius: var(--radius-full);
+  font-size: 0.82rem;
+  font-weight: 500;
+  color: var(--text-muted);
+}
+
+.spinner-mini {
+  width: 14px;
+  height: 14px;
+  border: 2px solid rgba(0, 0, 0, 0.12);
+  border-top-color: var(--primary-solid);
+  border-radius: 50%;
+  animation: spin 0.75s linear infinite;
+  display: inline-block;
+  flex: none;
+}
+
+.brand-icon-loading {
+  position: relative;
+  display: grid;
+  place-items: center;
+}
+
+.brand-icon-loading::after {
+  content: '';
+  position: absolute;
+  inset: -6px;
+  border-radius: var(--radius-lg);
+  border: 2px dashed rgba(0, 0, 0, 0.2);
+  animation: spin 8s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* =========================================
    MOBILE-FIRST OPTIMIZATIONS (< 800px)
    ========================================= */
 @media (max-width: 800px) {

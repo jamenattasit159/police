@@ -16,7 +16,53 @@ export default function Dashboard({ me }: { me: Me }) {
   }, [])
 
   if (error) return <p className="error page">{error}</p>
-  if (!rows) return <p className="muted page">กำลังโหลดข้อมูลสรุปผล…</p>
+  if (!rows) {
+    return (
+      <div className="page dashboard-skeleton" aria-busy="true" aria-label="กำลังโหลดข้อมูล">
+        <div className="page-header">
+          <div className="page-title">
+            <div className="skeleton-title" />
+            <div className="skeleton-subtitle" />
+          </div>
+          <div className="loading-badge-pill">
+            <span className="spinner-mini" />
+            <span>กำลังประมวลผลสถิติจากฐานข้อมูล…</span>
+          </div>
+        </div>
+
+        <div className="stats">
+          {[1, 2, 3, 4].map((i) => (
+            <div className="stat-card skeleton-card" key={i}>
+              <div className="stat-card-header">
+                <div className="skeleton-line" style={{ width: '45%' }} />
+                <div className="skeleton-square" style={{ width: 32, height: 32 }} />
+              </div>
+              <div className="skeleton-big-num" />
+              <div className="skeleton-line" style={{ width: '60%' }} />
+            </div>
+          ))}
+        </div>
+
+        <div className="table-card skeleton-card" style={{ padding: 0 }}>
+          <div className="table-header-bar">
+            <div className="skeleton-line" style={{ width: '32%', height: 18 }} />
+          </div>
+          <div style={{ padding: '16px 20px', display: 'flex', flexDirection: 'column', gap: 16 }}>
+            {[1, 2, 3, 4, 5, 6, 7].map((i) => (
+              <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
+                <div className="skeleton-line" style={{ width: '22%', height: 16 }} />
+                <div className="skeleton-line" style={{ width: '10%', height: 16 }} />
+                <div className="skeleton-line" style={{ width: '10%', height: 16 }} />
+                <div className="skeleton-line" style={{ width: '10%', height: 16 }} />
+                <div className="skeleton-line" style={{ width: '8%', height: 16 }} />
+                <div className="skeleton-line" style={{ flex: 1, height: 12, borderRadius: 9999 }} />
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    )
+  }
 
   const total = (r: Row) => r.red + r.orange + r.yellow
   const sum = (l: Level) => rows.reduce((n, r) => n + r[l], 0)
