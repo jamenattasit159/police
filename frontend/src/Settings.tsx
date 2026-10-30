@@ -6,9 +6,11 @@ import {
   IconEdit,
   IconImage,
   IconPhone,
+  IconPlus,
   IconRotateCcw,
   IconSettings,
   IconShield,
+  IconTrash,
   IconUpload,
   IconX,
 } from './icons'
@@ -76,8 +78,10 @@ export default function Settings({
   const [settingsSuccess, setSettingsSuccess] = useState('')
   const [settingsError, setSettingsError] = useState('')
 
-  // Station editing state
+  // Station management state
+  const [stationMode, setStationMode] = useState<'list' | 'add' | 'edit'>('list')
   const [editingStation, setEditingStation] = useState<Station | null>(null)
+  const [stationCode, setStationCode] = useState('')
   const [stationName, setStationName] = useState('')
   const [stationPhone, setStationPhone] = useState('')
   const [stationAddress, setStationAddress] = useState('')
@@ -179,8 +183,21 @@ export default function Settings({
     }
   }
 
+  const startAddStation = () => {
+    setStationMode('add')
+    setEditingStation(null)
+    setStationCode('')
+    setStationName('')
+    setStationPhone('')
+    setStationAddress('')
+    setStationError('')
+    setStationSuccess('')
+  }
+
   const startEditStation = (st: Station) => {
+    setStationMode('edit')
     setEditingStation(st)
+    setStationCode(st.code)
     setStationName(st.name)
     setStationPhone(st.phone || '')
     setStationAddress(st.address || '')
@@ -188,30 +205,70 @@ export default function Settings({
     setStationSuccess('')
   }
 
+  const cancelStationForm = () => {
+    setStationMode('list')
+    setEditingStation(null)
+    setStationCode('')
+    setStationName('')
+    setStationPhone('')
+    setStationAddress('')
+  }
+
   const saveStation = async (e: FormEvent) => {
     e.preventDefault()
-    if (!editingStation) return
     setSavingStation(true)
     setStationError('')
     try {
-      await api(`/stations/${editingStation.id}`, 'PUT', {
-        name: stationName,
-        phone: stationPhone,
-        address: stationAddress,
-      })
-      const updatedList = stations.map((s) =>
-        s.id === editingStation.id
-          ? { ...s, name: stationName, phone: stationPhone, address: stationAddress }
-          : s,
-      )
-      onUpdateStations(updatedList)
-      setStationSuccess(`อัปเดตข้อมูล ${stationName} สำเร็จ`)
-      setEditingStation(null)
+      if (stationMode === 'add') {
+        const created = await api<Station>('/stations', 'POST', {
+          code: stationCode.trim().toUpperCase(),
+          name: stationName.trim(),
+          phone: stationPhone.trim(),
+          address: stationAddress.trim(),
+        })
+        const updatedList = [...stations, created].sort((a, b) => a.code.localeCompare(b.code))
+        onUpdateStations(updatedList)
+        setStationSuccess(`เพิ่ม ${created.name} (${created.code}) เรียบร้อยแล้ว`)
+        cancelStationForm()
+      } else if (stationMode === 'edit' && editingStation) {
+        await api(`/stations/${editingStation.id}`, 'PUT', {
+          name: stationName.trim(),
+          phone: stationPhone.trim(),
+          address: stationAddress.trim(),
+        })
+        const updatedList = stations.map((s) =>
+          s.id === editingStation.id
+            ? { ...s, name: stationName.trim(), phone: stationPhone.trim(), address: stationAddress.trim() }
+            : s,
+        )
+        onUpdateStations(updatedList)
+        setStationSuccess(`อัปเดตข้อมูล ${stationName} สำเร็จ`)
+        cancelStationForm()
+      }
       setTimeout(() => setStationSuccess(''), 4000)
     } catch (err) {
       setStationError((err as Error).message)
     } finally {
       setSavingStation(false)
+    }
+  }
+
+  const deleteStation = async (st: Station) => {
+    const confirmMsg = `ยืนยันการลบ ${st.name} (${st.code}) ออกจากระบบหรือไม่?\n\nคำเตือน: หากมีข้อมูลผู้ต้องหาหรือเจ้าหน้าที่สังกัด สภ. นี้ ระบบจะไม่อนุญาตให้ลบเพื่อความปลอดภัยของข้อมูล`
+    if (!window.confirm(confirmMsg)) return
+
+    setStationError('')
+    try {
+      await api(`/stations/${st.id}`, 'DELETE')
+      const updatedList = stations.filter((s) => s.id !== st.id)
+      onUpdateStations(updatedList)
+      setStationSuccess(`ลบ ${st.name} (${st.code}) เรียบร้อยแล้ว`)
+      if (editingStation?.id === st.id) {
+        cancelStationForm()
+      }
+      setTimeout(() => setStationSuccess(''), 4000)
+    } catch (err) {
+      setStationError((err as Error).message)
     }
   }
 
@@ -224,7 +281,7 @@ export default function Settings({
             ตั้งค่าระบบและข้อมูลหน่วยงาน
           </h2>
           <p>
-            สิทธิ์เฉพาะระดับสารวัตรขึ้นไป ({ROLE_LABEL[me.role]}) ในการปรับแต่งตราสัญลักษณ์ ชื่อระบบ และชื่อ สภ. 7 แห่ง
+            สิทธิ์เฉพาะระดับสารวัตรขึ้นไป ({ROLE_LABEL[me.role]}) ในการปรับแต่งตราสัญลักษณ์ ชื่อระบบ และข้อมูลสถานีตำรวจภูธร (สภ.)
           </p>
         </div>
         <div className="settings-role-badge">
@@ -450,22 +507,57 @@ export default function Settings({
             </div>
           )}
 
-          {editingStation ? (
+          {stationMode !== 'list' && (
             <form className="card" onSubmit={saveStation} style={{ marginBottom: 20 }}>
-              <div className="form-header">
-                <h3>
-                  แก้ไขข้อมูล: <code>{editingStation.code}</code> {editingStation.name}
+              <div className="form-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
+                <h3 style={{ margin: 0, display: 'flex', alignItems: 'center', gap: 8 }}>
+                  {stationMode === 'add' ? (
+                    <>
+                      <IconPlus width={18} height={18} />
+                      <span>เพิ่มสถานีตำรวจภูธร (สภ.) ใหม่</span>
+                    </>
+                  ) : (
+                    <>
+                      <IconEdit width={18} height={18} />
+                      <span>
+                        แก้ไขข้อมูล: <code>{editingStation?.code}</code> {editingStation?.name}
+                      </span>
+                    </>
+                  )}
                 </h3>
                 <button
                   type="button"
                   className="btn ghost small"
-                  onClick={() => setEditingStation(null)}
+                  onClick={cancelStationForm}
+                  title="ปิดฟอร์ม"
                 >
                   <IconX width={16} height={16} />
                 </button>
               </div>
 
               <div className="grid2" style={{ gap: 16 }}>
+                <label>
+                  <span>รหัส สภ. (เช่น TH1512)</span>
+                  <input
+                    value={stationCode}
+                    onChange={(e) => setStationCode(e.target.value.toUpperCase())}
+                    placeholder="เช่น TH1512"
+                    required
+                    maxLength={20}
+                    disabled={stationMode === 'edit'}
+                    style={
+                      stationMode === 'edit'
+                        ? { background: 'var(--bg-subtle, #f1f5f9)', cursor: 'not-allowed' }
+                        : undefined
+                    }
+                  />
+                  {stationMode === 'edit' ? (
+                    <span className="small muted">รหัส สภ. ไม่สามารถแก้ไขได้หลังสร้างแล้ว</span>
+                  ) : (
+                    <span className="small muted">รหัสเฉพาะภาษาอังกฤษตัวพิมพ์ใหญ่และตัวเลข</span>
+                  )}
+                </label>
+
                 <label>
                   <span>ชื่อสถานีตำรวจภูธร (สภ.)</span>
                   <input
@@ -486,7 +578,7 @@ export default function Settings({
                   />
                 </label>
 
-                <label style={{ gridColumn: '1 / -1' }}>
+                <label>
                   <span>ที่ตั้ง / ข้อมูลเพิ่มเติม</span>
                   <input
                     value={stationAddress}
@@ -496,77 +588,111 @@ export default function Settings({
                 </label>
               </div>
 
-              <div className="row" style={{ marginTop: 16 }}>
+              <div className="row" style={{ marginTop: 16, display: 'flex', gap: 10 }}>
                 <button className="btn primary" disabled={savingStation}>
                   <IconCheck width={15} height={15} />
-                  <span>{savingStation ? 'กำลังบันทึก…' : 'บันทึกข้อมูล สภ.'}</span>
+                  <span>
+                    {savingStation
+                      ? 'กำลังบันทึก…'
+                      : stationMode === 'add'
+                      ? 'บันทึกเพิ่ม สภ.'
+                      : 'บันทึกการแก้ไข สภ.'}
+                  </span>
                 </button>
-                <button type="button" className="btn" onClick={() => setEditingStation(null)}>
+                <button type="button" className="btn" onClick={cancelStationForm}>
                   ยกเลิก
                 </button>
               </div>
             </form>
-          ) : (
-            <div className="table-card">
-              <div className="table-header-bar">
-                <h3>
-                  <IconBuilding width={16} height={16} style={{ verticalAlign: 'middle', marginRight: 8, opacity: 0.7 }} />
-                  รายชื่อสถานีตำรวจภูธรในสังกัด ({stations.length} สถานี)
-                </h3>
-              </div>
-              <div className="table-wrap">
-                <table className="table">
-                  <thead>
-                    <tr>
-                      <th style={{ width: 100 }}>รหัส สภ.</th>
-                      <th>ชื่อสถานีตำรวจภูธร</th>
-                      <th>เบอร์โทรศัพท์</th>
-                      <th>ที่ตั้ง</th>
-                      <th style={{ textAlign: 'right' }}>การจัดการ</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {stations.map((s) => (
-                      <tr key={s.id}>
-                        <td>
-                          <code className="code-pill">{s.code}</code>
-                        </td>
-                        <td>
-                          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                            <div className="station-badge-icon">
-                              <IconBuilding width={14} height={14} />
-                            </div>
-                            <span style={{ fontWeight: 600 }}>{s.name}</span>
-                          </div>
-                        </td>
-                        <td>
-                          {s.phone ? (
-                            <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}>
-                              <IconPhone width={13} height={13} style={{ opacity: 0.6 }} />
-                              {s.phone}
-                            </span>
-                          ) : (
-                            <span className="muted">—</span>
-                          )}
-                        </td>
-                        <td>{s.address ? s.address : <span className="muted">—</span>}</td>
-                        <td style={{ textAlign: 'right' }}>
-                          <button
-                            className="btn small"
-                            onClick={() => startEditStation(s)}
-                            title="แก้ไขชื่อหรือข้อมูล สภ."
-                          >
-                            <IconEdit width={13} height={13} />
-                            <span>แก้ไข</span>
-                          </button>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            </div>
           )}
+
+          <div className="table-card">
+            <div
+              className="table-header-bar"
+              style={{
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                padding: '14px 18px',
+                borderBottom: '1px solid var(--border-subtle, #e2e8f0)',
+              }}
+            >
+              <h3 style={{ margin: 0, fontSize: '0.95rem', fontWeight: 600 }}>
+                <IconBuilding
+                  width={16}
+                  height={16}
+                  style={{ verticalAlign: 'middle', marginRight: 8, opacity: 0.7 }}
+                />
+                รายชื่อสถานีตำรวจภูธรในสังกัด ({stations.length} สถานี)
+              </h3>
+              {stationMode === 'list' && (
+                <button className="btn primary small" onClick={startAddStation}>
+                  <IconPlus width={14} height={14} />
+                  <span>เพิ่ม สภ. ใหม่</span>
+                </button>
+              )}
+            </div>
+            <div className="table-wrap">
+              <table className="table">
+                <thead>
+                  <tr>
+                    <th style={{ width: 100 }}>รหัส สภ.</th>
+                    <th>ชื่อสถานีตำรวจภูธร</th>
+                    <th>เบอร์โทรศัพท์</th>
+                    <th>ที่ตั้ง</th>
+                    <th style={{ textAlign: 'right', width: 160 }}>การจัดการ</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {stations.map((s) => (
+                    <tr key={s.id}>
+                      <td>
+                        <code className="code-pill">{s.code}</code>
+                      </td>
+                      <td>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                          <div className="station-badge-icon">
+                            <IconBuilding width={14} height={14} />
+                          </div>
+                          <span style={{ fontWeight: 600 }}>{s.name}</span>
+                        </div>
+                      </td>
+                      <td>
+                        {s.phone ? (
+                          <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}>
+                            <IconPhone width={13} height={13} style={{ opacity: 0.6 }} />
+                            {s.phone}
+                          </span>
+                        ) : (
+                          <span className="muted">—</span>
+                        )}
+                      </td>
+                      <td>{s.address ? s.address : <span className="muted">—</span>}</td>
+                      <td style={{ textAlign: 'right', whiteSpace: 'nowrap' }}>
+                        <button
+                          className="btn small"
+                          onClick={() => startEditStation(s)}
+                          title="แก้ไขชื่อหรือข้อมูล สภ."
+                          style={{ marginRight: 6 }}
+                        >
+                          <IconEdit width={13} height={13} />
+                          <span>แก้ไข</span>
+                        </button>
+                        <button
+                          className="btn small danger"
+                          onClick={() => deleteStation(s)}
+                          title="ลบ สภ."
+                        >
+                          <IconTrash width={13} height={13} />
+                          <span>ลบ</span>
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
         </div>
       )}
     </div>

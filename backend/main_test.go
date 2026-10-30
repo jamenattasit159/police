@@ -127,6 +127,27 @@ func TestOfficerIsolation(t *testing.T) {
 	if code, _ := offA.do("PUT", "/api/stations/1", map[string]string{"name": "hack"}); code != 403 {
 		t.Fatalf("officer updating station: want 403, got %d", code)
 	}
+	if code, _ := offA.do("POST", "/api/stations", map[string]string{"name": "hack"}); code != 403 {
+		t.Fatalf("officer creating station: want 403, got %d", code)
+	}
+	if code, _ := offA.do("DELETE", "/api/stations/1", nil); code != 403 {
+		t.Fatalf("officer deleting station: want 403, got %d", code)
+	}
+	// Boss creates new station
+	var newSt struct{ ID int `json:"id"` }
+	if code, b := boss.do("POST", "/api/stations", map[string]string{"name": "สภ.ใหม่", "code": "NEW99"}); code != 201 {
+		t.Fatalf("boss creating station: want 201, got %d %s", code, b)
+	} else {
+		json.Unmarshal(b, &newSt)
+	}
+	// Boss cannot delete station sA because it has users/suspects
+	if code, _ := boss.do("DELETE", "/api/stations/"+strconv.Itoa(sA), nil); code != 400 {
+		t.Fatalf("boss deleting non-empty station: want 400, got %d", code)
+	}
+	// Boss can delete the newly created empty station
+	if code, _ := boss.do("DELETE", "/api/stations/"+strconv.Itoa(newSt.ID), nil); code != 200 {
+		t.Fatalf("boss deleting empty station: want 200, got %d", code)
+	}
 	if code, _ := boss.do("PUT", "/api/settings", map[string]string{"system_title": "ระบบสืบสวน"}); code != 200 {
 		t.Fatalf("boss updating settings: want 200, got %d", code)
 	}

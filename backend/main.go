@@ -130,6 +130,9 @@ func (a *app) routes(mux *http.ServeMux) {
 	mux.HandleFunc("POST /api/logout", a.logout)
 	mux.HandleFunc("GET /api/me", a.auth(a.me))
 	mux.HandleFunc("GET /api/stations", a.auth(a.listStations))
+	mux.HandleFunc("POST /api/stations", a.auth(adminOnly(a.createStation)))
+	mux.HandleFunc("PUT /api/stations/{id}", a.auth(adminOnly(a.updateStation)))
+	mux.HandleFunc("DELETE /api/stations/{id}", a.auth(adminOnly(a.deleteStation)))
 	mux.HandleFunc("GET /api/suspects", a.auth(a.listSuspects))
 	mux.HandleFunc("POST /api/suspects", a.auth(a.createSuspect))
 	mux.HandleFunc("PUT /api/suspects/{id}", a.auth(a.updateSuspect))
@@ -140,7 +143,6 @@ func (a *app) routes(mux *http.ServeMux) {
 	mux.HandleFunc("PUT /api/users/{id}", a.auth(adminOnly(a.updateUser)))
 	mux.HandleFunc("GET /api/settings", a.getSettings)
 	mux.HandleFunc("PUT /api/settings", a.auth(adminOnly(a.updateSettings)))
-	mux.HandleFunc("PUT /api/stations/{id}", a.auth(adminOnly(a.updateStation)))
 }
 
 // spa serves the built React app, falling back to index.html for unknown paths.
