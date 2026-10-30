@@ -25,7 +25,7 @@ func testApp(t *testing.T) (*app, http.Handler) {
 		t.Fatal(err)
 	}
 	t.Cleanup(db.Close)
-	db.Exec(ctx, `DROP TABLE IF EXISTS audit_log, suspects, sessions, users, stations CASCADE`)
+	db.Exec(ctx, `DROP TABLE IF EXISTS system_settings, audit_log, suspects, sessions, users, stations CASCADE`)
 	t.Setenv("ADMIN_USER", "boss")
 	t.Setenv("ADMIN_PASSWORD", "boss-password")
 	if err := setupDB(ctx, db); err != nil {
@@ -120,6 +120,18 @@ func TestOfficerIsolation(t *testing.T) {
 	}
 	if code, _ := offA.do("GET", "/api/users", nil); code != 403 {
 		t.Fatalf("officer listing users: want 403, got %d", code)
+	}
+	if code, _ := offA.do("PUT", "/api/settings", map[string]string{"system_title": "hack"}); code != 403 {
+		t.Fatalf("officer updating settings: want 403, got %d", code)
+	}
+	if code, _ := offA.do("PUT", "/api/stations/1", map[string]string{"name": "hack"}); code != 403 {
+		t.Fatalf("officer updating station: want 403, got %d", code)
+	}
+	if code, _ := boss.do("PUT", "/api/settings", map[string]string{"system_title": "ระบบสืบสวน"}); code != 200 {
+		t.Fatalf("boss updating settings: want 200, got %d", code)
+	}
+	if code, _ := boss.do("PUT", "/api/stations/"+strconv.Itoa(sA), map[string]string{"name": "สภ.ทดสอบ"}); code != 200 {
+		t.Fatalf("boss updating station: want 200, got %d", code)
 	}
 	var dash []struct{ StationID int `json:"station_id"` }
 	_, b := offB.do("GET", "/api/dashboard", nil)

@@ -14,6 +14,24 @@ export interface Station {
   id: number
   code: string
   name: string
+  phone?: string
+  address?: string
+}
+
+export interface SystemSettings {
+  system_title: string
+  system_org: string
+  system_subtitle: string
+  system_badge_url: string
+  system_notice: string
+}
+
+export const DEFAULT_SETTINGS: SystemSettings = {
+  system_title: 'ติดตามผู้ต้องหา',
+  system_org: 'ภ.จว.อ่างทอง',
+  system_subtitle: 'ระบบสารสนเทศภูมิศาสตร์สืบสวน',
+  system_badge_url: '',
+  system_notice: '',
 }
 
 export interface Suspect {

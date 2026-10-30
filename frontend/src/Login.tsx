@@ -1,8 +1,8 @@
 import { useState, type FormEvent } from 'react'
-import { api } from './api'
+import { api, type SystemSettings } from './api'
 import { IconLock, IconShield, IconUser } from './icons'
 
-export default function Login({ onLogin }: { onLogin: () => void }) {
+export default function Login({ onLogin, settings }: { onLogin: () => void; settings?: SystemSettings }) {
   const [username, setUsername] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
@@ -27,10 +27,18 @@ export default function Login({ onLogin }: { onLogin: () => void }) {
       <form className="login-card" onSubmit={submit}>
         <div className="login-header">
           <div className="login-badge" aria-hidden="true">
-            <IconShield width={24} height={24} />
+            {settings?.system_badge_url ? (
+              <img
+                src={settings.system_badge_url}
+                alt="ตราสัญลักษณ์"
+                style={{ width: '100%', height: '100%', objectFit: 'contain' }}
+              />
+            ) : (
+              <IconShield width={24} height={24} />
+            )}
           </div>
-          <h1>ระบบติดตามผู้ต้องหา</h1>
-          <p className="subtitle">ตำรวจภูธรจังหวัดอ่างทอง</p>
+          <h1>{settings?.system_title ? `${settings.system_title}` : 'ระบบติดตามผู้ต้องหา'}</h1>
+          <p className="subtitle">{settings?.system_org || 'ตำรวจภูธรจังหวัดอ่างทอง'}</p>
         </div>
 
         <label>

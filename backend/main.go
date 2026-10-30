@@ -69,7 +69,7 @@ func main() {
 
 const csp = "default-src 'self'; script-src 'self'; " +
 	"style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; " +
-	"img-src 'self' data: https://tile.openstreetmap.org; connect-src 'self'; " +
+	"img-src 'self' data: https: https://tile.openstreetmap.org; connect-src 'self'; " +
 	"frame-ancestors 'none'; base-uri 'none'; form-action 'self'; object-src 'none'"
 
 func securityHeaders(next http.Handler) http.Handler {
@@ -138,6 +138,9 @@ func (a *app) routes(mux *http.ServeMux) {
 	mux.HandleFunc("GET /api/users", a.auth(adminOnly(a.listUsers)))
 	mux.HandleFunc("POST /api/users", a.auth(adminOnly(a.createUser)))
 	mux.HandleFunc("PUT /api/users/{id}", a.auth(adminOnly(a.updateUser)))
+	mux.HandleFunc("GET /api/settings", a.getSettings)
+	mux.HandleFunc("PUT /api/settings", a.auth(adminOnly(a.updateSettings)))
+	mux.HandleFunc("PUT /api/stations/{id}", a.auth(adminOnly(a.updateStation)))
 }
 
 // spa serves the built React app, falling back to index.html for unknown paths.
@@ -178,11 +181,15 @@ func serverErr(w http.ResponseWriter, err error) {
 // decode only accepts application/json: HTML forms can't send it cross-site, which blocks CSRF
 // even if SameSite cookies are bypassed.
 func decode(w http.ResponseWriter, r *http.Request, v any) bool {
+	return decodeMax(w, r, v, 64<<10)
+}
+
+func decodeMax(w http.ResponseWriter, r *http.Request, v any, maxBytes int64) bool {
 	if mt, _, _ := mime.ParseMediaType(r.Header.Get("Content-Type")); mt != "application/json" {
 		httpErr(w, http.StatusUnsupportedMediaType, "ต้องส่งข้อมูลแบบ JSON")
 		return false
 	}
-	r.Body = http.MaxBytesReader(w, r.Body, 64<<10)
+	r.Body = http.MaxBytesReader(w, r.Body, maxBytes)
 	if err := json.NewDecoder(r.Body).Decode(v); err != nil {
 		httpErr(w, http.StatusBadRequest, "ข้อมูลไม่ถูกต้อง")
 		return false

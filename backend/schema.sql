@@ -60,3 +60,19 @@ INSERT INTO stations (code, name) VALUES
   ('TH1506', 'สภ.วิเศษชัยชาญ'),
   ('TH1507', 'สภ.สามโก้')
 ON CONFLICT (code) DO NOTHING;
+
+ALTER TABLE stations ADD COLUMN IF NOT EXISTS phone TEXT NOT NULL DEFAULT '';
+ALTER TABLE stations ADD COLUMN IF NOT EXISTS address TEXT NOT NULL DEFAULT '';
+
+CREATE TABLE IF NOT EXISTS system_settings (
+  key   TEXT PRIMARY KEY,
+  value TEXT NOT NULL
+);
+
+INSERT INTO system_settings (key, value) VALUES
+  ('system_title', 'ติดตามผู้ต้องหา'),
+  ('system_org', 'ภ.จว.อ่างทอง'),
+  ('system_subtitle', 'ระบบสารสนเทศภูมิศาสตร์สืบสวน'),
+  ('system_badge_url', ''),
+  ('system_notice', '')
+ON CONFLICT (key) DO NOTHING;

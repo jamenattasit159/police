@@ -1337,6 +1337,210 @@ input:focus, select:focus, textarea:focus {
 }
 
 /* =========================================
+   SETTINGS PAGE & BRANDING CUSTOMIZER
+   ========================================= */
+.settings-page {
+  padding-bottom: 90px;
+}
+
+.settings-role-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.78rem;
+  font-weight: 500;
+  padding: 4px 12px;
+  background: var(--bg-muted);
+  border: 1px solid var(--border-base);
+  border-radius: var(--radius-full);
+  color: var(--text-secondary);
+}
+
+.settings-nav-tabs {
+  display: flex;
+  gap: 6px;
+  margin-bottom: 20px;
+  background: var(--bg-muted);
+  padding: 4px;
+  border-radius: var(--radius-lg);
+  width: fit-content;
+  border: 1px solid rgba(0, 0, 0, 0.04);
+}
+
+.settings-nav-tab {
+  border: 0;
+  background: transparent;
+  padding: 8px 16px;
+  border-radius: var(--radius-md);
+  font-size: 0.88rem;
+  font-weight: 500;
+  color: var(--text-muted);
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  transition: all 0.15s ease;
+  touch-action: manipulation;
+}
+
+.settings-nav-tab:hover {
+  color: var(--text-main);
+}
+
+.settings-nav-tab.active {
+  background: #ffffff;
+  color: var(--text-main);
+  font-weight: 600;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+}
+
+.alert.success {
+  background: var(--success-soft);
+  color: var(--success-text);
+  border: 1px solid #a7f3d0;
+  padding: 10px 14px;
+  border-radius: var(--radius-md);
+  margin-bottom: 14px;
+  font-size: 0.88rem;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  animation: fadeIn 0.2s ease;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(-3px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.preview-card {
+  background: var(--bg-subtle);
+  border: 1px solid var(--border-base);
+  border-radius: var(--radius-lg);
+  padding: 14px 16px;
+  margin-bottom: 16px;
+}
+
+.preview-label {
+  font-size: 0.76rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  margin-bottom: 8px;
+  display: block;
+}
+
+.preview-topbar {
+  background: #ffffff;
+  border: 1px solid rgba(0, 0, 0, 0.07);
+  border-radius: var(--radius-md);
+  padding: 8px 16px;
+  box-shadow: var(--shadow-ambient);
+}
+
+.settings-section h3 {
+  font-size: 1.05rem;
+  margin-bottom: 4px;
+}
+
+.logo-edit-layout {
+  display: flex;
+  gap: 20px;
+  align-items: flex-start;
+  flex-wrap: wrap;
+  margin-top: 14px;
+}
+
+.logo-current-box {
+  width: 80px;
+  height: 80px;
+  border-radius: var(--radius-lg);
+  border: 2px dashed var(--border-base);
+  background: var(--bg-surface);
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  flex-shrink: 0;
+  box-shadow: var(--shadow-ambient);
+}
+
+.logo-current-img {
+  width: 68px;
+  height: 68px;
+  object-fit: contain;
+}
+
+.logo-placeholder {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  color: var(--text-light);
+}
+
+.logo-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  flex: 1;
+  min-width: 280px;
+}
+
+.presets-list {
+  margin-top: 6px;
+}
+
+.presets-grid {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-top: 6px;
+}
+
+.preset-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 12px;
+  border: 1px solid var(--border-base);
+  border-radius: var(--radius-full);
+  background: #ffffff;
+  cursor: pointer;
+  font-size: 0.82rem;
+  transition: all 0.15s ease;
+  touch-action: manipulation;
+}
+
+.preset-btn:hover {
+  background: var(--bg-subtle);
+  border-color: #d4d4d8;
+}
+
+.preset-btn.active {
+  border-color: var(--primary-solid);
+  background: var(--bg-muted);
+  font-weight: 600;
+}
+
+.preset-preview-box {
+  width: 24px;
+  height: 24px;
+  display: grid;
+  place-items: center;
+}
+
+.code-pill {
+  font-family: monospace;
+  font-size: 0.82rem;
+  font-weight: 600;
+  background: var(--bg-muted);
+  border: 1px solid var(--border-base);
+  padding: 2px 6px;
+  border-radius: var(--radius-sm);
+  color: var(--text-main);
+}
+
+/* =========================================
    MAGIC UI SKELETON & MODERN LOADING
    ========================================= */
 @keyframes skeleton-shimmer {

@@ -1,16 +1,27 @@
 import { useEffect, useState } from 'react'
-import { api, isAdmin, ROLE_LABEL, setOnUnauthorized, type Me, type Station } from './api'
+import {
+  api,
+  DEFAULT_SETTINGS,
+  isAdmin,
+  ROLE_LABEL,
+  setOnUnauthorized,
+  type Me,
+  type Station,
+  type SystemSettings,
+} from './api'
 import Login from './Login'
 import MapPage from './MapPage'
 import Dashboard from './Dashboard'
 import Users from './Users'
-import { IconDashboard, IconLogOut, IconMap, IconShield, IconUsers } from './icons'
+import Settings from './Settings'
+import { IconDashboard, IconLogOut, IconMap, IconSettings, IconShield, IconUsers } from './icons'
 
-type Page = 'map' | 'dashboard' | 'users'
+type Page = 'map' | 'dashboard' | 'users' | 'settings'
 
 export default function App() {
   const [me, setMe] = useState<Me | null | undefined>(undefined)
   const [stations, setStations] = useState<Station[]>([])
+  const [settings, setSettings] = useState<SystemSettings>(DEFAULT_SETTINGS)
   const [page, setPage] = useState<Page>('map')
 
   const loadMe = () =>
@@ -18,9 +29,16 @@ export default function App() {
       .then(setMe)
       .catch(() => setMe(null))
 
+  const loadSettings = () => {
+    api<SystemSettings>('/settings')
+      .then(setSettings)
+      .catch(() => {})
+  }
+
   useEffect(() => {
     setOnUnauthorized(() => setMe(null))
     loadMe()
+    loadSettings()
   }, [])
 
   useEffect(() => {
@@ -33,19 +51,23 @@ export default function App() {
         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 16 }}>
           <div className="brand-icon-loading">
             <div className="brand-icon" style={{ width: 48, height: 48 }}>
-              <IconShield width={24} height={24} />
+              {settings.system_badge_url ? (
+                <img src={settings.system_badge_url} alt="" style={{ width: 32, height: 32, objectFit: 'contain' }} />
+              ) : (
+                <IconShield width={24} height={24} />
+              )}
             </div>
           </div>
           <div className="loading-badge-pill">
             <span className="spinner-mini" />
-            <span>กำลังเชื่อมต่อระบบสารสนเทศภูมิศาสตร์สืบสวน…</span>
+            <span>กำลังเชื่อมต่อ{settings.system_subtitle || 'ระบบสารสนเทศภูมิศาสตร์สืบสวน'}…</span>
           </div>
         </div>
       </div>
     )
   }
 
-  if (me === null) return <Login onLogin={loadMe} />
+  if (me === null) return <Login onLogin={loadMe} settings={settings} />
 
   const logout = async () => {
     await api('/logout', 'POST').catch(() => {})
@@ -57,7 +79,10 @@ export default function App() {
     { key: 'map', label: 'แผนที่ติดตาม', shortLabel: 'แผนที่', icon: <IconMap width={18} height={18} /> },
     { key: 'dashboard', label: 'แดชบอร์ดสรุปผล', shortLabel: 'แดชบอร์ด', icon: <IconDashboard width={18} height={18} /> },
     ...(isAdmin(me)
-      ? [{ key: 'users' as Page, label: 'จัดการผู้ใช้งาน', shortLabel: 'ผู้ใช้งาน', icon: <IconUsers width={18} height={18} /> }]
+      ? [
+          { key: 'users' as Page, label: 'จัดการผู้ใช้งาน', shortLabel: 'ผู้ใช้งาน', icon: <IconUsers width={18} height={18} /> },
+          { key: 'settings' as Page, label: 'ตั้งค่าระบบ', shortLabel: 'ตั้งค่า', icon: <IconSettings width={18} height={18} /> },
+        ]
       : []),
   ]
 
@@ -68,14 +93,18 @@ export default function App() {
       <header className="topbar">
         <div className="brand">
           <div className="brand-icon" aria-hidden="true">
-            <IconShield width={18} height={18} />
+            {settings.system_badge_url ? (
+              <img src={settings.system_badge_url} alt="ตราสัญลักษณ์" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
+            ) : (
+              <IconShield width={18} height={18} />
+            )}
           </div>
           <div className="brand-text">
             <span>
-              ติดตามผู้ต้องหา <b>ภ.จว.อ่างทอง</b>
+              {settings.system_title} <b>{settings.system_org}</b>
             </span>
             <span className="brand-badge hide-mobile">
-              <span className="live-dot" /> ระบบสารสนเทศภูมิศาสตร์สืบสวน
+              <span className="live-dot" /> {settings.system_subtitle}
             </span>
           </div>
         </div>
@@ -120,6 +149,15 @@ export default function App() {
         {page === 'map' && <MapPage me={me} stations={stations} />}
         {page === 'dashboard' && <Dashboard me={me} />}
         {page === 'users' && isAdmin(me) && <Users me={me} stations={stations} />}
+        {page === 'settings' && isAdmin(me) && (
+          <Settings
+            me={me}
+            stations={stations}
+            settings={settings}
+            onUpdateSettings={setSettings}
+            onUpdateStations={setStations}
+          />
+        )}
       </main>
 
       {/* Mobile Floating Bottom Navigation Dock */}

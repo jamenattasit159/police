@@ -228,21 +228,23 @@ func (a *app) dashboard(w http.ResponseWriter, r *http.Request, u *user) {
 }
 
 func (a *app) listStations(w http.ResponseWriter, r *http.Request, u *user) {
-	rows, err := a.db.Query(r.Context(), `SELECT id, code, name FROM stations ORDER BY code`)
+	rows, err := a.db.Query(r.Context(), `SELECT id, code, name, phone, address FROM stations ORDER BY code`)
 	if err != nil {
 		serverErr(w, err)
 		return
 	}
 	defer rows.Close()
 	type station struct {
-		ID   int    `json:"id"`
-		Code string `json:"code"`
-		Name string `json:"name"`
+		ID      int    `json:"id"`
+		Code    string `json:"code"`
+		Name    string `json:"name"`
+		Phone   string `json:"phone"`
+		Address string `json:"address"`
 	}
 	out := []station{}
 	for rows.Next() {
 		var s station
-		if err := rows.Scan(&s.ID, &s.Code, &s.Name); err != nil {
+		if err := rows.Scan(&s.ID, &s.Code, &s.Name, &s.Phone, &s.Address); err != nil {
 			serverErr(w, err)
 			return
 		}
