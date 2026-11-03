@@ -25,7 +25,7 @@ func testApp(t *testing.T) (*app, http.Handler) {
 		t.Fatal(err)
 	}
 	t.Cleanup(db.Close)
-	db.Exec(ctx, `DROP TABLE IF EXISTS system_settings, audit_log, suspects, sessions, users, stations CASCADE`)
+	db.Exec(ctx, `DROP TABLE IF EXISTS password_reset_requests, system_settings, audit_log, suspects, sessions, users, stations CASCADE`)
 	t.Setenv("ADMIN_USER", "boss")
 	t.Setenv("ADMIN_PASSWORD", "boss-password")
 	if err := setupDB(ctx, db); err != nil {
@@ -138,6 +138,9 @@ func TestPasswordFlows(t *testing.T) {
 	if code, _ := u.do("POST", "/api/users/"+strconv.Itoa(me.ID)+"/reset-password", nil); code != 403 {
 		t.Fatalf("officer resetting a password: want 403, got %d", code)
 	}
+	for i := 0; i < 5; i++ { // the owner locks themselves out guessing
+		anon.do("POST", "/api/login", map[string]string{"username": "newbie", "password": "guess"})
+	}
 	var temp struct {
 		Temp string `json:"temp_password"`
 	}
@@ -154,6 +157,23 @@ func TestPasswordFlows(t *testing.T) {
 	json.Unmarshal(b, &reqs)
 	if len(reqs) != 1 || reqs[0].UserID != nil {
 		t.Fatalf("the user's request should be resolved, unknown one left: %s", b)
+	}
+}
+
+func TestClientIP(t *testing.T) {
+	r := httptest.NewRequest("GET", "/", nil) // RemoteAddr 192.0.2.1
+	r.Header.Set("X-Real-IP", "10.0.0.1")
+	r.Header.Set("CF-Connecting-IP", "203.0.113.9")
+	for env, want := range map[string]string{"": "192.0.2.1", "0": "192.0.2.1", "1": "10.0.0.1", "CF-Connecting-IP": "203.0.113.9", "X-Missing": "192.0.2.1"} {
+		t.Setenv("TRUST_PROXY", env)
+		if got := clientIP(r); got != want {
+			t.Errorf("TRUST_PROXY=%q: got %s, want %s", env, got, want)
+		}
+	}
+	r.Header.Set("CF-Connecting-IP", "not-an-ip")
+	t.Setenv("TRUST_PROXY", "CF-Connecting-IP")
+	if got := clientIP(r); got != "192.0.2.1" {
+		t.Errorf("garbage header must be ignored, got %s", got)
 	}
 }
 

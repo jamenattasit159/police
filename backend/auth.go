@@ -150,11 +150,15 @@ var dummyHash = func() string {
 	return string(h)
 }()
 
-// clientIP uses X-Real-IP only when TRUST_PROXY=1 (set it when running behind nginx/Caddy that sets the header);
-// otherwise the header is attacker-controlled and ignored.
+// clientIP trusts a proxy header only when TRUST_PROXY says so; otherwise headers are attacker-controlled and ignored.
+// TRUST_PROXY=1 reads X-Real-IP (our nginx/Caddy). Any other value is the header name itself,
+// e.g. TRUST_PROXY=CF-Connecting-IP on Render, whose Cloudflare edge overwrites that header (unlike X-Forwarded-For).
 func clientIP(r *http.Request) string {
-	if os.Getenv("TRUST_PROXY") == "1" {
-		if ip := r.Header.Get("X-Real-IP"); ip != "" {
+	if h := os.Getenv("TRUST_PROXY"); h != "" && h != "0" {
+		if h == "1" {
+			h = "X-Real-IP"
+		}
+		if ip := strings.TrimSpace(r.Header.Get(h)); net.ParseIP(ip) != nil {
 			return ip
 		}
 	}
