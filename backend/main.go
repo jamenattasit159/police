@@ -94,7 +94,9 @@ func securityHeaders(next http.Handler) http.Handler {
 	})
 }
 
-// setupDB applies the schema and ensures ADMIN_USER / ADMIN_PASSWORD exist and are synced.
+// setupDB applies the schema and creates ADMIN_USER / ADMIN_PASSWORD if that account doesn't exist yet.
+// An existing account is never touched, so a password changed in the app survives restarts and deploys.
+// Locked out? Set ADMIN_USER to a new name: the next start creates a fresh commander.
 func setupDB(ctx context.Context, db *pgxpool.Pool) error {
 	if _, err := db.Exec(ctx, schema); err != nil {
 		return err
@@ -104,14 +106,8 @@ func setupDB(ctx context.Context, db *pgxpool.Pool) error {
 	if user != "" && len(pass) >= 8 {
 		hash, err := bcrypt.GenerateFromPassword([]byte(pass), bcrypt.DefaultCost)
 		if err == nil {
-			var exists bool
-			_ = db.QueryRow(ctx, `SELECT EXISTS(SELECT 1 FROM users WHERE username = $1)`, user).Scan(&exists)
-			if exists {
-				_, _ = db.Exec(ctx, `UPDATE users SET password_hash = $1 WHERE username = $2`, string(hash), user)
-			} else {
-				_, _ = db.Exec(ctx, `INSERT INTO users (username, password_hash, full_name, role) VALUES ($1,$2,$3,'commander')`,
-					user, string(hash), "ผู้กำกับ")
-			}
+			_, _ = db.Exec(ctx, `INSERT INTO users (username, password_hash, full_name, role) VALUES ($1,$2,$3,'commander')
+				ON CONFLICT (username) DO NOTHING`, user, string(hash), "ผู้กำกับ")
 		}
 	}
 
