@@ -1,0 +1,35 @@
+<template>
+  <style>
+@font-face{font-family:'Sarabun';src:url('assets/fonts/Sarabun-Regular.ttf') format('truetype');font-weight:400;}@font-face{font-family:'Sarabun';src:url('assets/fonts/Sarabun-SemiBold.ttf') format('truetype');font-weight:600;}@font-face{font-family:'Sarabun';src:url('assets/fonts/Sarabun-Bold.ttf') format('truetype');font-weight:700;}
+
+#outro { position:absolute; inset:0; overflow:hidden; font-family:'Sarabun',sans-serif; color:#fff;
+  background: radial-gradient(1200px 900px at 30% 20%, #1d3a63 0%, #0f1f36 55%, #070e1a 100%); }
+#outro .stack { position:absolute; left:90px; right:90px; top:0; bottom:0; display:flex; flex-direction:column; justify-content:center; gap:26px; }
+#outro .badge { width:110px; height:110px; border-radius:28px; background:rgba(242,182,50,.14); border:2px solid rgba(242,182,50,.6);
+  display:flex; align-items:center; justify-content:center; }
+#outro .kicker { font-size:36px; color:#f2b632; font-weight:600; letter-spacing:.02em; }
+#outro .title { font-size:88px; font-weight:700; line-height:1.15; }
+#outro .lead { font-size:40px; color:#cfd8e6; }
+#outro .tip { font-size:44px; line-height:1.35; }
+#outro .tip > div { display:flex; gap:28px; align-items:baseline; }
+#outro .tip b { color:#f2b632; font-size:44px; }
+#outro .foot { font-size:30px; color:#9fb0c8; margin-top:18px; }
+
+  </style>
+  <div id="outro" data-composition-id="outro" data-width="1080" data-height="1920">
+  <div class="stack"><div id="outro-l1" class="clip kicker" data-start="0" data-duration="11.18"><div id="outro-l1-i">ข้อควรปฏิบัติ</div></div>
+    <div id="outro-l2" class="clip tip" data-start="0" data-duration="11.18"><div id="outro-l2-i"><b>1</b><span>รหัสผ่านเป็นของท่านคนเดียว ห้ามให้ผู้อื่นใช้</span></div></div>
+    <div id="outro-l3" class="clip tip" data-start="0" data-duration="11.18"><div id="outro-l3-i"><b>2</b><span>ใช้เครื่องส่วนกลาง ต้องกด ออกจากระบบ ทุกครั้ง</span></div></div>
+    <div id="outro-l4" class="clip tip" data-start="0" data-duration="11.18"><div id="outro-l4-i"><b>3</b><span>ข้อมูลเป็นความลับทางราชการ ห้ามแคปหน้าจอเผยแพร่</span></div></div>
+    <div id="outro-l5" class="clip foot" data-start="0" data-duration="11.18"><div id="outro-l5-i">ติดปัญหาการใช้งาน ติดต่อเจ้าหน้าที่ที่เกี่ยวข้อง</div></div></div>
+  </div>
+  <script>
+    const tl = gsap.timeline({ paused: true });
+    tl.fromTo("#outro-l1-i",{opacity:0,y:30},{opacity:1,y:0,duration:0.55,ease:"power3.out"},0.2);
+    tl.fromTo("#outro-l2-i",{opacity:0,y:30},{opacity:1,y:0,duration:0.55,ease:"power3.out"},0.5);
+    tl.fromTo("#outro-l3-i",{opacity:0,y:30},{opacity:1,y:0,duration:0.55,ease:"power3.out"},1.0);
+    tl.fromTo("#outro-l4-i",{opacity:0,y:30},{opacity:1,y:0,duration:0.55,ease:"power3.out"},1.5);
+    tl.fromTo("#outro-l5-i",{opacity:0,y:30},{opacity:1,y:0,duration:0.55,ease:"power3.out"},2.2);
+    window.__timelines["outro"] = tl;
+  </script>
+</template>

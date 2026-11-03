@@ -1,0 +1,33 @@
+<template>
+  <style>
+@font-face{font-family:'Sarabun';src:url('assets/fonts/Sarabun-Regular.ttf') format('truetype');font-weight:400;}@font-face{font-family:'Sarabun';src:url('assets/fonts/Sarabun-SemiBold.ttf') format('truetype');font-weight:600;}@font-face{font-family:'Sarabun';src:url('assets/fonts/Sarabun-Bold.ttf') format('truetype');font-weight:700;}
+
+#intro { position:absolute; inset:0; overflow:hidden; font-family:'Sarabun',sans-serif; color:#fff;
+  background: radial-gradient(1200px 900px at 30% 20%, #1d3a63 0%, #0f1f36 55%, #070e1a 100%); }
+#intro .stack { position:absolute; left:90px; right:90px; top:0; bottom:0; display:flex; flex-direction:column; justify-content:center; gap:26px; }
+#intro .badge { width:110px; height:110px; border-radius:28px; background:rgba(242,182,50,.14); border:2px solid rgba(242,182,50,.6);
+  display:flex; align-items:center; justify-content:center; }
+#intro .kicker { font-size:36px; color:#f2b632; font-weight:600; letter-spacing:.02em; }
+#intro .title { font-size:88px; font-weight:700; line-height:1.15; }
+#intro .lead { font-size:40px; color:#cfd8e6; }
+#intro .tip { font-size:44px; line-height:1.35; }
+#intro .tip > div { display:flex; gap:28px; align-items:baseline; }
+#intro .tip b { color:#f2b632; font-size:44px; }
+#intro .foot { font-size:30px; color:#9fb0c8; margin-top:18px; }
+
+  </style>
+  <div id="intro" data-composition-id="intro" data-width="1080" data-height="1920">
+  <div class="stack"><div id="intro-l1" class="clip badge" data-start="0" data-duration="5.64"><div id="intro-l1-i"><svg width="62" height="62" viewBox="0 0 24 24" fill="none" stroke="#f2b632" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><circle cx="12" cy="10" r="2.6"/></svg></div></div>
+    <div id="intro-l2" class="clip kicker" data-start="0" data-duration="5.64"><div id="intro-l2-i">คู่มือการใช้งานสำหรับเจ้าหน้าที่ สภ.</div></div>
+    <div id="intro-l3" class="clip title" data-start="0" data-duration="5.64"><div id="intro-l3-i">วิธีลงข้อมูลผู้ต้องหา</div></div>
+    <div id="intro-l4" class="clip lead" data-start="0" data-duration="5.64"><div id="intro-l4-i">ระบบติดตามผู้ต้องหา ภ.จว.อ่างทอง</div></div></div>
+  </div>
+  <script>
+    const tl = gsap.timeline({ paused: true });
+    tl.fromTo("#intro-l1-i",{opacity:0,y:30},{opacity:1,y:0,duration:0.55,ease:"power3.out"},0.2);
+    tl.fromTo("#intro-l2-i",{opacity:0,y:30},{opacity:1,y:0,duration:0.55,ease:"power3.out"},0.45);
+    tl.fromTo("#intro-l3-i",{opacity:0,y:30},{opacity:1,y:0,duration:0.55,ease:"power3.out"},0.65);
+    tl.fromTo("#intro-l4-i",{opacity:0,y:30},{opacity:1,y:0,duration:0.55,ease:"power3.out"},0.95);
+    window.__timelines["intro"] = tl;
+  </script>
+</template>

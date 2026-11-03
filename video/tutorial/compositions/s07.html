@@ -1,0 +1,41 @@
+<template>
+  <style>
+@font-face{font-family:'Sarabun';src:url('assets/fonts/Sarabun-Regular.ttf') format('truetype');font-weight:400;}@font-face{font-family:'Sarabun';src:url('assets/fonts/Sarabun-SemiBold.ttf') format('truetype');font-weight:600;}@font-face{font-family:'Sarabun';src:url('assets/fonts/Sarabun-Bold.ttf') format('truetype');font-weight:700;}
+
+#s07 { position:absolute; inset:0; overflow:hidden; background:#0b1220; font-family:'Sarabun',sans-serif; }
+#s07 .cam { position:absolute; left:0; top:0; width:1920px; height:1080px; }
+#s07 .stage { position:absolute; overflow:hidden; border-radius:44px; box-shadow:0 0 0 6px #1f2a3d, 0 24px 60px rgba(0,0,0,.5); }
+#s07 .shot { position:absolute; left:0; top:0; width:1920px; height:1080px; }
+#s07 .hl { position:absolute; z-index:5; }
+#s07 .hl i { position:absolute; inset:0; display:block; border:5px solid #f2b632; border-radius:14px;
+  box-shadow:0 0 0 9999px rgba(8,14,26,.42), 0 0 28px rgba(242,182,50,.75); }
+#s07 .rip { position:absolute; width:90px; height:90px; z-index:7; }
+#s07 .rip i { position:absolute; inset:0; display:block; border:5px solid #f2b632; border-radius:50%; }
+#s07 .cursor { position:absolute; left:0; top:0; z-index:8; filter:drop-shadow(0 3px 6px rgba(0,0,0,.45)); }
+#s07 .cap { position:absolute; left:0; top:0; width:1920px; height:1080px; z-index:10; pointer-events:none; }
+#s07 .cap .box { position:absolute; display:flex; align-items:center; gap:26px;
+  background:rgba(12,22,40,.93); border:2px solid rgba(242,182,50,.55); border-radius:24px; padding:22px 34px; color:#fff; }
+#s07 .cap .num { flex:none; width:76px; height:76px; border-radius:50%; background:#f2b632; color:#0f1f36; font-weight:700;
+  font-size:44px; display:flex; align-items:center; justify-content:center; }
+#s07 .cap .main { font-size:50px; font-weight:700; line-height:1.25; }
+#s07 .cap .sub { font-size:33px; font-weight:400; color:#d6deea; line-height:1.35; margin-top:4px; }
+
+  </style>
+  <div id="s07" data-composition-id="s07" data-width="1920" data-height="1080">
+  <div id="s07-cam" class="cam" data-layout-allow-overflow><img id="s07-shot" class="clip shot" data-start="0" data-duration="5" src="assets/shots/07_saved.png" alt="">
+    <div id="s07-hl1" class="clip hl" data-start="0.4" data-duration="2.2" data-layout-allow-overflow style="left:12px;top:305px;width:402px;height:166px"><i id="s07-hl1-i"></i></div>
+    <div id="s07-hl2" class="clip hl" data-start="2.7" data-duration="2.3" data-layout-allow-overflow style="left:1170px;top:541px;width:68px;height:68px"><i id="s07-hl2-i"></i></div>
+    <div id="s07-cur" class="cursor" data-layout-ignore><svg width="46" height="46" viewBox="0 0 24 24"><path d="M3 2l7.5 19 2.6-7.9L21 10.5z" fill="#fff" stroke="#111" stroke-width="1.4" stroke-linejoin="round"/></svg></div></div>
+  <div id="s07-cap1" class="clip cap" data-start="0.0" data-duration="5.0" data-layout-allow-caption-zone><div id="s07-cap1-box" class="box" style="left:556px;width:1240px;top:822px"><div class="num">4</div><div><div class="main">บันทึกเรียบร้อย</div><div class="sub">หมุดขึ้นบนแผนที่และในรายการทันที</div></div></div></div>
+  </div>
+  <script>
+    const tl = gsap.timeline({ paused: true });
+    tl.fromTo("#s07-hl1-i",{opacity:0,scale:1.12},{opacity:1,scale:1,duration:0.35,ease:"power3.out"},0.4);
+    tl.fromTo("#s07-hl2-i",{opacity:0,scale:1.12},{opacity:1,scale:1,duration:0.35,ease:"power3.out"},2.7);
+    tl.set("#s07-cur",{x:168,y:973},0);
+    tl.fromTo("#s07-cur",{x:168,y:973},{x:213,y:388,duration:0.7,ease:"power2.inOut"},0.00);
+    tl.fromTo("#s07-cur",{x:213,y:388},{x:1204,y:575,duration:0.7,ease:"power2.inOut"},2.10);
+    tl.fromTo("#s07-cap1-box",{opacity:0,y:18},{opacity:1,y:0,duration:0.35,ease:"power3.out"},0.05);
+    window.__timelines["s07"] = tl;
+  </script>
+</template>
