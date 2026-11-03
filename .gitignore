@@ -9,3 +9,14 @@ backend/server*
 .impeccable/
 .DS_Store
 Thumbs.db
+accounts/
+video/node_modules/
+video/package*.json
+video/tutorial/renders/
+video/tutorial/.hyperframes/
+video/tutorial-mobile/renders/
+video/tutorial-mobile/.hyperframes/
+video/.voice-cache/
+video/tutorial-mobile/assets/shots/
+video/tutorial-mobile/assets/fonts/
+__pycache__/

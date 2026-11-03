@@ -1,0 +1,41 @@
+<template>
+  <style>
+@font-face{font-family:'Sarabun';src:url('assets/fonts/Sarabun-Regular.ttf') format('truetype');font-weight:400;}@font-face{font-family:'Sarabun';src:url('assets/fonts/Sarabun-SemiBold.ttf') format('truetype');font-weight:600;}@font-face{font-family:'Sarabun';src:url('assets/fonts/Sarabun-Bold.ttf') format('truetype');font-weight:700;}
+
+#s02 { position:absolute; inset:0; overflow:hidden; background:#0b1220; font-family:'Sarabun',sans-serif; }
+#s02 .cam { position:absolute; left:0; top:0; width:1920px; height:1080px; }
+#s02 .stage { position:absolute; overflow:hidden; border-radius:44px; box-shadow:0 0 0 6px #1f2a3d, 0 24px 60px rgba(0,0,0,.5); }
+#s02 .shot { position:absolute; left:0; top:0; width:1920px; height:1080px; }
+#s02 .hl { position:absolute; z-index:5; }
+#s02 .hl i { position:absolute; inset:0; display:block; border:5px solid #f2b632; border-radius:14px;
+  box-shadow:0 0 0 9999px rgba(8,14,26,.42), 0 0 28px rgba(242,182,50,.75); }
+#s02 .rip { position:absolute; width:90px; height:90px; z-index:7; }
+#s02 .rip i { position:absolute; inset:0; display:block; border:5px solid #f2b632; border-radius:50%; }
+#s02 .cursor { position:absolute; left:0; top:0; z-index:8; filter:drop-shadow(0 3px 6px rgba(0,0,0,.45)); }
+#s02 .cap { position:absolute; left:0; top:0; width:1920px; height:1080px; z-index:10; pointer-events:none; }
+#s02 .cap .box { position:absolute; display:flex; align-items:center; gap:26px;
+  background:rgba(12,22,40,.93); border:2px solid rgba(242,182,50,.55); border-radius:24px; padding:22px 34px; color:#fff; }
+#s02 .cap .num { flex:none; width:76px; height:76px; border-radius:50%; background:#f2b632; color:#0f1f36; font-weight:700;
+  font-size:44px; display:flex; align-items:center; justify-content:center; }
+#s02 .cap .main { font-size:50px; font-weight:700; line-height:1.25; }
+#s02 .cap .sub { font-size:33px; font-weight:400; color:#d6deea; line-height:1.35; margin-top:4px; }
+
+  </style>
+  <div id="s02" data-composition-id="s02" data-width="1920" data-height="1080">
+  <div id="s02-cam" class="cam" data-layout-allow-overflow><img id="s02-shot" class="clip shot" data-start="0" data-duration="3.5" src="assets/shots/02_login_filled.png" alt="">
+    <div id="s02-hl1" class="clip hl" data-start="0.4" data-duration="3.1" data-layout-allow-overflow style="left:754px;top:636px;width:411px;height:70px"><i id="s02-hl1-i"></i></div>
+    <div id="s02-rip1" class="clip rip" data-start="1.0" data-duration="0.6" data-layout-allow-overflow style="left:914px;top:626px"><i id="s02-rip1-i"></i></div>
+    <div id="s02-cur" class="cursor" data-layout-ignore><svg width="46" height="46" viewBox="0 0 24 24"><path d="M3 2l7.5 19 2.6-7.9L21 10.5z" fill="#fff" stroke="#111" stroke-width="1.4" stroke-linejoin="round"/></svg></div></div>
+  <div id="s02-cap1" class="clip cap" data-start="0.0" data-duration="3.5" data-layout-allow-caption-zone><div id="s02-cap1-box" class="box" style="left:556px;width:1240px;top:822px"><div class="num">1</div><div><div class="main">กดปุ่ม เข้าสู่ระบบ</div><div class="sub">รหัสผ่านจะแสดงเป็นจุด ไม่มีใครเห็น</div></div></div></div>
+  </div>
+  <script>
+    const tl = gsap.timeline({ paused: true });
+    tl.fromTo("#s02-hl1-i",{opacity:0,scale:1.12},{opacity:1,scale:1,duration:0.35,ease:"power3.out"},0.4);
+    tl.set("#s02-cur",{x:960,y:597},0);
+    tl.fromTo("#s02-cur",{x:960,y:597},{x:960,y:671,duration:0.7,ease:"power2.inOut"},0.30);
+    tl.fromTo("#s02-rip1-i",{scale:0.3,opacity:1},{scale:1.4,opacity:0,duration:0.55,ease:"power2.out"},1.0);
+    tl.fromTo("#s02-cur",{scale:1},{scale:0.82,duration:0.08,yoyo:true,repeat:1},1.0);
+    tl.fromTo("#s02-cap1-box",{opacity:0,y:18},{opacity:1,y:0,duration:0.35,ease:"power3.out"},0.05);
+    window.__timelines["s02"] = tl;
+  </script>
+</template>

@@ -167,6 +167,31 @@ GET    /api/users   POST /api/users   PUT /api/users/{id}      (commander/inspec
 - **ทดสอบแล้ว:** go test สิทธิ์ผ่านครบถ้วน (รวมทดสอบความปลอดภัยป้องกัน officer สร้าง/ลบ สภ. และห้ามลบ สภ. ที่มีข้อมูลผู้ต้องหา); npm audit (0 vulnerabilities); oxlint (0 errors, 0 warnings); vite build ผ่านฉลุย
 - **ความปลอดภัย:** ทดสอบเจาะระบบครอบคลุมทั้ง 58 ข้อ (เพิ่มตรวจสอบสิทธิ์ officer ห้ามสร้าง/ลบ สภ.)
 - **ขั้นถัดไป:** พร้อม deploy ขึ้น Render / Neon และส่งมอบให้หน่วยงานใช้งาน
+
+### บัญชี สภ. (11 บัญชี, สร้าง 2026-11-03)
+- สร้างด้วย `python -I data/create_station_accounts.py [base_url]` → รหัสสุ่มแข็งแรง, ไฟล์รหัสอยู่ที่ `accounts/station-accounts-<host>.csv` (gitignored — ส่งมอบแล้วลบทิ้ง)
+- ชื่อผู้ใช้: mueang, chaiyo, pamok, photong, sawaengha, wiset, samko, bangchak, rammasak, sibuathong, ketchaiyo
+- **ตอน deploy จริงต้องรันสคริปต์นี้อีกครั้งกับ URL production** (ฐานข้อมูลคนละตัว รหัสจะเป็นชุดใหม่) — บัญชีที่มีอยู่แล้วจะถูกข้าม ไม่เปลี่ยนรหัส
+- บัญชีผู้การ (ดูภาพรวม) ใช้ที่ตั้งไว้แล้ว ไม่ได้เปลี่ยน
+
+### รหัสผ่าน: บังคับเปลี่ยนครั้งแรก + ลืมรหัสผ่าน (2026-11-03)
+- บัญชีที่ admin สร้าง/ตั้งรหัสให้ → `users.must_change_password = true` → login แล้ว **server บล็อกทุก API** (403 `must_change_password`) ยกเว้น `/api/me`, `/api/password` จนกว่าจะตั้งรหัสใหม่ (`backend/auth.go`)
+- `POST /api/password` เปลี่ยนรหัสเอง (ต้องใส่รหัสเดิม, ≥8, ≠ รหัสเดิม, ≠ ชื่อผู้ใช้, ผิด 5 ครั้งล็อก 15 นาที) → ออกจากระบบทุกเครื่องอื่น
+- ลืมรหัส: ระบบไม่มีอีเมล/SMS จึงใช้ **คำขอ → ผู้กำกับ/สารวัตรโทรยืนยัน → ออกรหัสชั่วคราว** (`backend/password.go`)
+  - `POST /api/password-reset-requests` (สาธารณะ, ตอบเหมือนกันทุกกรณีกันเดาชื่อผู้ใช้, จำกัด 5 ครั้ง/IP/15 นาที)
+  - หน้า "จัดการผู้ใช้งาน" แสดงคำขอ + ปุ่ม "ออกรหัสชั่วคราว" / "รีเซ็ตรหัส" → รหัสแสดงครั้งเดียว ไม่เก็บ, ผู้ใช้ถูกออกจากระบบ, ต้องตั้งใหม่
+- test: `TestPasswordFlows` ใน `backend/main_test.go`
+- ข้อควรรู้: บัญชี `ADMIN_USER` ถูกตั้งรหัสตาม `.env` ทุกครั้งที่ server เริ่ม (`setupDB`) — ถ้าผู้กำกับเปลี่ยนรหัสเองในหน้าเว็บ รีสตาร์ทแล้วจะกลับเป็นค่าใน `.env`
+
+### คลิปสอนใช้งาน (HyperFrames)
+- 2 คลิป: คอม `video/tutorial` (1920x1080) และมือถือ `video/tutorial-mobile` (1080x1920) — สร้างจาก `video/build_tutorial.py` (ตัวแปร `DESKTOP`, `MOBILE`)
+- เสียงพากย์: บทอยู่ที่ `video/VOICEOVER.md` → สร้างด้วยเสียงโคลนของ Motion Studio: `node video/voiceover_studio.mjs "เจมส์ V.3"` (ใช้ key ใน `D:/งานที่ให้ AI ทำ/motion/studio/.env`, โทน "เร่งปิดการขาย" จัดเต็ม + ปรับแต่งเสียงแบบเดียวกับ Studio, แคชใน `video/.voice-cache` — แก้บทแล้วรันใหม่ ส่งเฉพาะบรรทัดที่เปลี่ยน) → ได้ `<project>/assets/voice/<รหัสฉาก>.wav` → `python video/build_tutorial.py` ฉากยืดตามเสียงอัตโนมัติ → render
+- คำในคลิปใช้ "เจ้าหน้าที่ที่เกี่ยวข้อง" — **ห้ามใช้คำว่า ผู้กำกับ / สารวัตร** ในคลิป (หน้าลืมรหัสผ่านของแอปก็เปลี่ยนตามแล้ว)
+- `video/capture.py` — เปิดแอปจริงด้วยบัญชี `demo` (สภ.เมืองอ่างทอง) แคปหน้าจอคอม 15 + มือถือ 12 ขั้น + ตำแหน่งปุ่ม → `video/tutorial/assets` (ก่อนแคป admin ออกรหัส `TRAINER_PASSWORD` ให้ demo ใหม่ เพื่อให้เห็นหน้าตั้งรหัสครั้งแรก; จบแล้ว demo มีรหัส `TRAINER_PASSWORD` + `-v`)
+- `video/build_tutorial.py` — สร้างฉาก HyperFrames (เคอร์เซอร์, กรอบไฮไลต์, คำบรรยายไทย, เสียงคลิก) แก้ข้อความ/เวลาได้ที่ตัวแปร `SCENES`
+- เรนเดอร์: `cd video/tutorial && npx hyperframes@0.9.6 render --docker -o renders/tutorial.mp4` (**ต้องใช้ `--docker`** — บนเครื่องนี้ Chrome ของ HyperFrames/Playwright เปิดแบบ pipe ไม่ได้; capture.py จึงต่อ Chrome ผ่าน CDP port แทน)
+- UI เปลี่ยน → รัน capture.py + build_tutorial.py + render ใหม่
+- หมุดตัวอย่างในคลิปเป็นข้อมูลปลอม (note `[DEMO]`) — ลบด้วย `python -I data/seed_demo.py --delete`
 - **ติดอะไร:** ไม่มี (ได้ข้อมูลเขต สภ. ครบทั้ง 11 แห่งแล้ว)
 
 ### วิธีรัน (เครื่อง dev, Windows + Git Bash + Docker Desktop)

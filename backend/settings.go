@@ -16,11 +16,11 @@ func (a *app) getSettings(w http.ResponseWriter, r *http.Request) {
 	}
 	defer rows.Close()
 	out := map[string]string{
-		"system_title":    "ติดตามผู้ต้องหา",
-		"system_org":      "ภ.จว.อ่างทอง",
-		"system_subtitle": "ระบบสารสนเทศภูมิศาสตร์สืบสวน",
+		"system_title":     "ติดตามผู้ต้องหา",
+		"system_org":       "ภ.จว.อ่างทอง",
+		"system_subtitle":  "ระบบสารสนเทศภูมิศาสตร์สืบสวน",
 		"system_badge_url": "",
-		"system_notice":   "",
+		"system_notice":    "",
 	}
 	for rows.Next() {
 		var k, v string
@@ -47,11 +47,11 @@ func (a *app) updateSettings(w http.ResponseWriter, r *http.Request, u *user) {
 	defer tx.Rollback(r.Context())
 
 	allowedKeys := map[string]bool{
-		"system_title":    true,
-		"system_org":      true,
-		"system_subtitle": true,
+		"system_title":     true,
+		"system_org":       true,
+		"system_subtitle":  true,
 		"system_badge_url": true,
-		"system_notice":   true,
+		"system_notice":    true,
 	}
 
 	for k, v := range in {

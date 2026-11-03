@@ -1,0 +1,47 @@
+<template>
+  <style>
+@font-face{font-family:'Sarabun';src:url('assets/fonts/Sarabun-Regular.ttf') format('truetype');font-weight:400;}@font-face{font-family:'Sarabun';src:url('assets/fonts/Sarabun-SemiBold.ttf') format('truetype');font-weight:600;}@font-face{font-family:'Sarabun';src:url('assets/fonts/Sarabun-Bold.ttf') format('truetype');font-weight:700;}
+
+#s04 { position:absolute; inset:0; overflow:hidden; background:#0b1220; font-family:'Sarabun',sans-serif; }
+#s04 .cam { position:absolute; left:0; top:0; width:1920px; height:1080px; }
+#s04 .stage { position:absolute; overflow:hidden; border-radius:44px; box-shadow:0 0 0 6px #1f2a3d, 0 24px 60px rgba(0,0,0,.5); }
+#s04 .shot { position:absolute; left:0; top:0; width:1920px; height:1080px; }
+#s04 .hl { position:absolute; z-index:5; }
+#s04 .hl i { position:absolute; inset:0; display:block; border:5px solid #f2b632; border-radius:14px;
+  box-shadow:0 0 0 9999px rgba(8,14,26,.42), 0 0 28px rgba(242,182,50,.75); }
+#s04 .rip { position:absolute; width:90px; height:90px; z-index:7; }
+#s04 .rip i { position:absolute; inset:0; display:block; border:5px solid #f2b632; border-radius:50%; }
+#s04 .cursor { position:absolute; left:0; top:0; z-index:8; filter:drop-shadow(0 3px 6px rgba(0,0,0,.45)); }
+#s04 .cap { position:absolute; left:0; top:0; width:1920px; height:1080px; z-index:10; pointer-events:none; }
+#s04 .cap .box { position:absolute; display:flex; align-items:center; gap:26px;
+  background:rgba(12,22,40,.93); border:2px solid rgba(242,182,50,.55); border-radius:24px; padding:22px 34px; color:#fff; }
+#s04 .cap .num { flex:none; width:76px; height:76px; border-radius:50%; background:#f2b632; color:#0f1f36; font-weight:700;
+  font-size:44px; display:flex; align-items:center; justify-content:center; }
+#s04 .cap .main { font-size:50px; font-weight:700; line-height:1.25; }
+#s04 .cap .sub { font-size:33px; font-weight:400; color:#d6deea; line-height:1.35; margin-top:4px; }
+
+  </style>
+  <div id="s04" data-composition-id="s04" data-width="1920" data-height="1080">
+  <div id="s04-cam" class="cam" data-layout-allow-overflow><img id="s04-shot" class="clip shot" data-start="0" data-duration="6.5" src="assets/shots/04_picking.png" alt="">
+    <div id="s04-hl1" class="clip hl" data-start="0.4" data-duration="2.0" data-layout-allow-overflow style="left:12px;top:125px;width:408px;height:68px"><i id="s04-hl1-i"></i></div>
+    <div id="s04-hl2" class="clip hl" data-start="3.4" data-duration="3.1" data-layout-allow-overflow style="left:1158px;top:597px;width:92px;height:92px"><i id="s04-hl2-i"></i></div>
+    <div id="s04-rip1" class="clip rip" data-start="1.1" data-duration="0.6" data-layout-allow-overflow style="left:171px;top:114px"><i id="s04-rip1-i"></i></div>
+    <div id="s04-rip2" class="clip rip" data-start="3.4" data-duration="0.6" data-layout-allow-overflow style="left:1159px;top:598px"><i id="s04-rip2-i"></i></div>
+    <div id="s04-cur" class="cursor" data-layout-ignore><svg width="46" height="46" viewBox="0 0 24 24"><path d="M3 2l7.5 19 2.6-7.9L21 10.5z" fill="#fff" stroke="#111" stroke-width="1.4" stroke-linejoin="round"/></svg></div></div>
+  <div id="s04-cap1" class="clip cap" data-start="0.0" data-duration="6.5" data-layout-allow-caption-zone><div id="s04-cap1-box" class="box" style="left:556px;width:1240px;top:822px"><div class="num">3</div><div><div class="main">ปักหมุดใหม่</div><div class="sub">กด ปักหมุดผู้ต้องหาใหม่ แล้วแตะตำแหน่งบ้านบนแผนที่</div></div></div></div>
+  </div>
+  <script>
+    const tl = gsap.timeline({ paused: true });
+    tl.fromTo("#s04-hl1-i",{opacity:0,scale:1.12},{opacity:1,scale:1,duration:0.35,ease:"power3.out"},0.4);
+    tl.fromTo("#s04-hl2-i",{opacity:0,scale:1.12},{opacity:1,scale:1,duration:0.35,ease:"power3.out"},3.4);
+    tl.set("#s04-cur",{x:464,y:122},0);
+    tl.fromTo("#s04-cur",{x:464,y:122},{x:216,y:159,duration:0.7,ease:"power2.inOut"},0.40);
+    tl.fromTo("#s04-rip1-i",{scale:0.3,opacity:1},{scale:1.4,opacity:0,duration:0.55,ease:"power2.out"},1.1);
+    tl.fromTo("#s04-cur",{scale:1},{scale:0.82,duration:0.08,yoyo:true,repeat:1},1.1);
+    tl.fromTo("#s04-cur",{x:216,y:159},{x:1204,y:643,duration:0.7,ease:"power2.inOut"},2.70);
+    tl.fromTo("#s04-rip2-i",{scale:0.3,opacity:1},{scale:1.4,opacity:0,duration:0.55,ease:"power2.out"},3.4);
+    tl.fromTo("#s04-cur",{scale:1},{scale:0.82,duration:0.08,yoyo:true,repeat:1},3.4);
+    tl.fromTo("#s04-cap1-box",{opacity:0,y:18},{opacity:1,y:0,duration:0.35,ease:"power3.out"},0.05);
+    window.__timelines["s04"] = tl;
+  </script>
+</template>

@@ -7,6 +7,63 @@ export default function Login({ onLogin, settings }: { onLogin: () => void; sett
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
   const [busy, setBusy] = useState(false)
+  const [forgot, setForgot] = useState(false)
+  const [contact, setContact] = useState('')
+  const [sent, setSent] = useState('')
+
+  const requestReset = async (e: FormEvent) => {
+    e.preventDefault()
+    setBusy(true)
+    setError('')
+    try {
+      const r = await api<{ message: string }>('/password-reset-requests', 'POST', { username, contact })
+      setSent(r.message)
+    } catch (err) {
+      setError((err as Error).message)
+    } finally {
+      setBusy(false)
+    }
+  }
+
+  if (forgot)
+    return (
+      <div className="login-wrap magic-dots">
+        <form className="login-card" onSubmit={requestReset}>
+          <div className="login-header">
+            <div className="login-badge" aria-hidden="true">
+              <IconLock width={24} height={24} />
+            </div>
+            <h1>ลืมรหัสผ่าน</h1>
+            <p className="subtitle">ส่งคำขอให้เจ้าหน้าที่ที่เกี่ยวข้องออกรหัสผ่านชั่วคราวให้ แล้วตั้งรหัสใหม่เมื่อเข้าระบบ</p>
+          </div>
+          {sent ? (
+            <p role="status" style={{ margin: 0 }}>{sent}</p>
+          ) : (
+            <>
+              <label>
+                ชื่อผู้ใช้งาน
+                <input autoFocus autoComplete="username" value={username} onChange={(e) => setUsername(e.target.value)} required maxLength={100} />
+              </label>
+              <label>
+                ยศ-ชื่อ และเบอร์ติดต่อกลับ
+                <input value={contact} onChange={(e) => setContact(e.target.value)} placeholder="เช่น ด.ต.สมชาย 08x-xxx-xxxx" maxLength={200} />
+              </label>
+              {error && (
+                <p className="error" role="alert">
+                  {error}
+                </p>
+              )}
+              <button className="btn primary" disabled={busy} style={{ minHeight: 42 }}>
+                {busy ? 'กำลังส่ง…' : 'ส่งคำขอรีเซ็ตรหัสผ่าน'}
+              </button>
+            </>
+          )}
+          <button type="button" className="link" onClick={() => { setForgot(false); setSent(''); setError('') }}>
+            กลับไปหน้าเข้าสู่ระบบ
+          </button>
+        </form>
+      </div>
+    )
 
   const submit = async (e: FormEvent) => {
     e.preventDefault()
@@ -79,6 +136,10 @@ export default function Login({ onLogin, settings }: { onLogin: () => void; sett
 
         <button className="btn primary" disabled={busy} style={{ minHeight: 42, marginTop: 4 }}>
           {busy ? 'กำลังตรวจสอบสิทธิ์…' : 'เข้าสู่ระบบ'}
+        </button>
+
+        <button type="button" className="link" onClick={() => { setForgot(true); setError('') }}>
+          ลืมรหัสผ่าน?
         </button>
 
         <div className="login-footer-badge">

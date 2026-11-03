@@ -1,0 +1,41 @@
+<template>
+  <style>
+@font-face{font-family:'Sarabun';src:url('assets/fonts/Sarabun-Regular.ttf') format('truetype');font-weight:400;}@font-face{font-family:'Sarabun';src:url('assets/fonts/Sarabun-SemiBold.ttf') format('truetype');font-weight:600;}@font-face{font-family:'Sarabun';src:url('assets/fonts/Sarabun-Bold.ttf') format('truetype');font-weight:700;}
+
+#m02 { position:absolute; inset:0; overflow:hidden; background:#0b1220; font-family:'Sarabun',sans-serif; }
+#m02 .cam { position:absolute; left:0; top:0; width:1080px; height:1920px; }
+#m02 .stage { position:absolute; overflow:hidden; border-radius:44px; box-shadow:0 0 0 6px #1f2a3d, 0 24px 60px rgba(0,0,0,.5); }
+#m02 .shot { position:absolute; left:0; top:0; width:1080px; height:1920px; }
+#m02 .hl { position:absolute; z-index:5; }
+#m02 .hl i { position:absolute; inset:0; display:block; border:5px solid #f2b632; border-radius:14px;
+  box-shadow:0 0 0 9999px rgba(8,14,26,.42), 0 0 28px rgba(242,182,50,.75); }
+#m02 .rip { position:absolute; width:90px; height:90px; z-index:7; }
+#m02 .rip i { position:absolute; inset:0; display:block; border:5px solid #f2b632; border-radius:50%; }
+#m02 .cursor { position:absolute; left:0; top:0; z-index:8; filter:drop-shadow(0 3px 6px rgba(0,0,0,.45)); }
+#m02 .cap { position:absolute; left:0; top:0; width:1080px; height:1920px; z-index:10; pointer-events:none; }
+#m02 .cap .box { position:absolute; display:flex; align-items:center; gap:26px;
+  background:rgba(12,22,40,.93); border:2px solid rgba(242,182,50,.55); border-radius:24px; padding:22px 34px; color:#fff; }
+#m02 .cap .num { flex:none; width:76px; height:76px; border-radius:50%; background:#f2b632; color:#0f1f36; font-weight:700;
+  font-size:44px; display:flex; align-items:center; justify-content:center; }
+#m02 .cap .main { font-size:50px; font-weight:700; line-height:1.25; }
+#m02 .cap .sub { font-size:33px; font-weight:400; color:#d6deea; line-height:1.35; margin-top:4px; }
+
+  </style>
+  <div id="m02" data-composition-id="m02" data-width="1080" data-height="1920">
+  <div id="m02-stage" class="stage" data-layout-allow-overflow style="left:97px;top:36px;width:1080px;height:1920px;transform:scale(0.82);transform-origin:0 0"><div id="m02-cam" class="cam" data-layout-allow-overflow><img id="m02-shot" class="clip shot" data-start="0" data-duration="3" src="assets/shots/m02_login_filled.png" alt="">
+    <div id="m02-hl1" class="clip hl" data-start="0.4" data-duration="2.6" data-layout-allow-overflow style="left:131px;top:1189px;width:818px;height:146px"><i id="m02-hl1-i"></i></div>
+    <div id="m02-rip1" class="clip rip" data-start="1.0" data-duration="0.6" data-layout-allow-overflow style="left:495px;top:1217px"><i id="m02-rip1-i"></i></div>
+    <div id="m02-cur" class="cursor" data-layout-ignore><svg width="76" height="76" viewBox="0 0 76 76"><circle cx="38" cy="38" r="30" fill="rgba(255,255,255,.55)" stroke="#111" stroke-width="3"/></svg></div></div></div>
+  <div id="m02-cap1" class="clip cap" data-start="0.0" data-duration="3.0" data-layout-allow-caption-zone><div id="m02-cap1-box" class="box" style="left:60px;width:960px;top:1636px"><div class="num">1</div><div><div class="main">แตะ เข้าสู่ระบบ</div></div></div></div>
+  </div>
+  <script>
+    const tl = gsap.timeline({ paused: true });
+    tl.fromTo("#m02-hl1-i",{opacity:0,scale:1.12},{opacity:1,scale:1,duration:0.35,ease:"power3.out"},0.4);
+    tl.set("#m02-cur",{x:502,y:1038},0);
+    tl.fromTo("#m02-cur",{x:502,y:1038},{x:502,y:1224,duration:0.7,ease:"power2.inOut"},0.30);
+    tl.fromTo("#m02-rip1-i",{scale:0.3,opacity:1},{scale:1.4,opacity:0,duration:0.55,ease:"power2.out"},1.0);
+    tl.fromTo("#m02-cur",{scale:1},{scale:0.82,duration:0.08,yoyo:true,repeat:1},1.0);
+    tl.fromTo("#m02-cap1-box",{opacity:0,y:18},{opacity:1,y:0,duration:0.35,ease:"power3.out"},0.05);
+    window.__timelines["m02"] = tl;
+  </script>
+</template>

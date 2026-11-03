@@ -1,6 +1,6 @@
 import { useEffect, useState, type FormEvent } from 'react'
 import { api, ROLE_LABEL, type Me, type Role, type Station, type UserRow } from './api'
-import { IconCheck, IconEdit, IconLock, IconPlus, IconUser, IconUsers, IconX } from './icons'
+import { IconAlertTriangle, IconCheck, IconEdit, IconLock, IconPlus, IconUser, IconUsers, IconX } from './icons'
 
 type Form = {
   id?: number
@@ -12,6 +12,16 @@ type Form = {
   active: boolean
 }
 
+type ResetRequest = {
+  id: number
+  username: string
+  user_id: number | null
+  full_name: string | null
+  station_name: string | null
+  contact: string
+  created_at: string
+}
+
 const empty: Form = { username: '', password: '', full_name: '', role: 'officer', station_id: null, active: true }
 
 export default function Users({ me, stations }: { me: Me; stations: Station[] }) {
@@ -20,12 +30,34 @@ export default function Users({ me, stations }: { me: Me; stations: Station[] })
   const [form, setForm] = useState<Form | null>(null)
   const [error, setError] = useState('')
   const [busy, setBusy] = useState(false)
+  const [requests, setRequests] = useState<ResetRequest[]>([])
+  const [temp, setTemp] = useState<{ username: string; password: string } | null>(null)
 
   const load = () => {
     api<UserRow[]>('/users')
       .then(setUsers)
       .catch((e) => setError(e.message))
       .finally(() => setLoading(false))
+    api<ResetRequest[]>('/password-reset-requests')
+      .then(setRequests)
+      .catch(() => {})
+  }
+
+  const resetPassword = async (id: number, username: string) => {
+    if (!confirm(`ออกรหัสผ่านชั่วคราวให้ "${username}"?
+รหัสเดิมจะใช้ไม่ได้ทันที และเจ้าของบัญชีต้องตั้งรหัสใหม่เมื่อเข้าระบบ`)) return
+    try {
+      const r = await api<{ temp_password: string }>(`/users/${id}/reset-password`, 'POST', {})
+      setTemp({ username, password: r.temp_password })
+      load()
+    } catch (err) {
+      setError((err as Error).message)
+    }
+  }
+
+  const dismiss = async (id: number) => {
+    await api(`/password-reset-requests/${id}/dismiss`, 'POST', {}).catch((e) => setError(e.message))
+    load()
   }
 
   useEffect(() => {
@@ -74,6 +106,78 @@ export default function Users({ me, stations }: { me: Me; stations: Station[] })
             ปิด
           </button>
         </p>
+      )}
+
+      {temp && (
+        <div className="card user-form" role="alertdialog" aria-label="รหัสผ่านชั่วคราว" style={{ marginBottom: 24, borderColor: 'var(--warning, #f2b632)' }}>
+          <h3 style={{ margin: 0, display: 'flex', alignItems: 'center', gap: 8 }}>
+            <IconLock width={18} height={18} />
+            <span>รหัสผ่านชั่วคราวของ {temp.username}</span>
+          </h3>
+          <code style={{ fontSize: '1.6rem', fontWeight: 700, letterSpacing: '0.06em', userSelect: 'all' }}>{temp.password}</code>
+          <p className="muted small" style={{ margin: 0 }}>
+            แสดงครั้งเดียวเท่านั้น ระบบไม่ได้เก็บรหัสนี้ไว้ — แจ้งเจ้าของบัญชีทางโทรศัพท์หรือด้วยตัวเอง (ไม่ควรส่งในกลุ่มแชท)
+            เมื่อเข้าระบบด้วยรหัสนี้ ระบบจะบังคับให้ตั้งรหัสใหม่ทันที
+          </p>
+          <div className="row">
+            <button className="btn" onClick={() => navigator.clipboard?.writeText(temp.password)}>คัดลอก</button>
+            <button className="btn primary" onClick={() => setTemp(null)}>
+              <IconCheck width={15} height={15} />
+              <span>แจ้งแล้ว ปิดหน้าต่างนี้</span>
+            </button>
+          </div>
+        </div>
+      )}
+
+      {requests.length > 0 && (
+        <div className="table-card" style={{ marginBottom: 24 }}>
+          <div className="table-header-bar">
+            <h3>
+              <IconAlertTriangle width={16} height={16} style={{ verticalAlign: 'middle', marginRight: 8, color: 'var(--warning, #f2b632)' }} />
+              คำขอรีเซ็ตรหัสผ่าน ({requests.length})
+            </h3>
+          </div>
+          <div className="table-wrap">
+            <table className="table">
+              <thead>
+                <tr>
+                  <th>ชื่อผู้ใช้ที่แจ้ง</th>
+                  <th>เจ้าของบัญชี</th>
+                  <th>ติดต่อกลับ</th>
+                  <th>เวลา</th>
+                  <th style={{ textAlign: 'right' }}>การจัดการ</th>
+                </tr>
+              </thead>
+              <tbody>
+                {requests.map((q) => (
+                  <tr key={q.id}>
+                    <td><code>{q.username}</code></td>
+                    <td>
+                      {q.user_id ? (
+                        `${q.full_name ?? ''}${q.station_name ? ` · ${q.station_name}` : ''}`
+                      ) : (
+                        <span className="muted">ไม่พบชื่อผู้ใช้นี้ในระบบ</span>
+                      )}
+                    </td>
+                    <td>{q.contact || <span className="muted">—</span>}</td>
+                    <td>{new Date(q.created_at).toLocaleString('th-TH')}</td>
+                    <td style={{ textAlign: 'right', whiteSpace: 'nowrap' }}>
+                      {q.user_id && (
+                        <button className="btn small primary" onClick={() => resetPassword(q.user_id!, q.username)}>
+                          ออกรหัสชั่วคราว
+                        </button>
+                      )}{' '}
+                      <button className="btn small" onClick={() => dismiss(q.id)}>ปิดคำขอ</button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+          <p className="muted small" style={{ padding: '0 16px 12px', margin: 0 }}>
+            ก่อนออกรหัส ให้โทรกลับยืนยันตัวตนตามเบอร์ในระบบของหน่วย — อย่าเชื่อเบอร์ที่แจ้งมาในคำขออย่างเดียว
+          </p>
+        </div>
       )}
 
       {form && (
@@ -148,7 +252,7 @@ export default function Users({ me, stations }: { me: Me; stations: Station[] })
             <label>
               <span style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
                 <IconLock width={13} height={13} />
-                {form.id ? 'รหัสผ่านใหม่ (เว้นว่างถ้าไม่ต้องการเปลี่ยน)' : 'รหัสผ่าน (อย่างน้อย 8 ตัวอักษร)'}
+                {form.id ? 'รหัสผ่านใหม่ (เว้นว่างถ้าไม่เปลี่ยน · เจ้าของต้องตั้งใหม่เมื่อเข้าระบบ)' : 'รหัสผ่านเริ่มต้น (เจ้าของต้องตั้งใหม่เมื่อเข้าระบบครั้งแรก)'}
               </span>
               <input
                 type="password"
@@ -238,8 +342,17 @@ export default function Users({ me, stations }: { me: Me; stations: Station[] })
                       <span className="live-dot" style={{ background: u.active ? 'var(--success)' : '#a1a1aa' }} />
                       <span>{u.active ? 'ใช้งานอยู่' : 'ระงับการใช้งาน'}</span>
                     </span>
+                    {u.must_change_password && u.active && (
+                      <div className="muted small" style={{ marginTop: 4 }}>รอเจ้าของตั้งรหัสใหม่</div>
+                    )}
                   </td>
-                  <td style={{ textAlign: 'right' }}>
+                  <td style={{ textAlign: 'right', whiteSpace: 'nowrap' }}>
+                    {u.id !== me.id && (
+                      <button className="btn small" onClick={() => resetPassword(u.id, u.username)} style={{ marginRight: 6 }}>
+                        <IconLock width={13} height={13} />
+                        <span>รีเซ็ตรหัส</span>
+                      </button>
+                    )}
                     <button
                       className="btn small"
                       onClick={() =>

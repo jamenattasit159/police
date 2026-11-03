@@ -691,7 +691,8 @@ export default function MapPage({ me, stations }: { me: Me; stations: Station[] 
 }
 
 function ClickCatcher({ onClick }: { onClick: (lat: number, lng: number) => void }) {
-  useMapEvents({ click: (e) => onClick(e.latlng.lat, e.latlng.lng) })
+  // 6 decimals ≈ 10 cm: plenty for a house, and fits the coordinate inputs
+  useMapEvents({ click: (e) => onClick(+e.latlng.lat.toFixed(6), +e.latlng.lng.toFixed(6)) })
   return null
 }
 
