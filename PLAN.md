@@ -168,6 +168,14 @@ GET    /api/users   POST /api/users   PUT /api/users/{id}      (commander/inspec
 - **ความปลอดภัย:** ทดสอบเจาะระบบครอบคลุมทั้ง 58 ข้อ (เพิ่มตรวจสอบสิทธิ์ officer ห้ามสร้าง/ลบ สภ.)
 - **ขั้นถัดไป:** พร้อม deploy ขึ้น Render / Neon และส่งมอบให้หน่วยงานใช้งาน
 
+### Host จริง (production)
+- แอป (Go + React ใน container เดียว): Render web service `police` (Docker, Free) — https://police-xzca.onrender.com — **Auto-Deploy จาก branch `main` เท่านั้น** (push branch อื่นไม่ขึ้น ต้อง merge เข้า main)
+- ฐานข้อมูล: Neon project `police` → branch `production` → database `neondb` (console.neon.tech) — Render ชี้มาที่นี่ผ่าน `DATABASE_URL` ใน Environment
+- schema อัปเดตเองตอนแอปเริ่ม ไม่ต้องรัน SQL; ก่อน deploy ที่แตะ schema ให้กด Backup & Restore ใน Neon ไว้ก่อน
+- ข้อควรรู้: Render Free จะหลับเมื่อไม่มีคนใช้ (เปิดครั้งแรกรอ ~50 วิ)
+- **Render Environment ต้องมี `TRUST_PROXY=CF-Connecting-IP`** — ทุกคนเข้าผ่าน proxy ของ Render ถ้าไม่ตั้ง ระบบล็อกตาม IP จะเห็นทั้งจังหวัดเป็น IP เดียว (ผิดรวม 20 ครั้ง = ล็อกทุกคน) ห้ามใช้ X-Forwarded-For (Render ไม่ล้าง ปลอมได้) — ตรวจหลังตั้ง: Neon SQL `SELECT ip, action FROM audit_log ORDER BY id DESC LIMIT 5` ต้องเห็น IP จริงของผู้ใช้ ไม่ใช่ 10.x
+- ล็อกเพราะใส่รหัสผิดเก็บในหน่วยความจำ: Render → Manual Deploy → Restart service ล้างได้ทันที; หรือ admin กด "รีเซ็ตรหัส" ให้คนนั้น (ปลดล็อกชื่อนั้นให้ด้วย)
+
 ### บัญชี สภ. (11 บัญชี, สร้าง 2026-11-03)
 - สร้างด้วย `python -I data/create_station_accounts.py [base_url]` → รหัสสุ่มแข็งแรง, ไฟล์รหัสอยู่ที่ `accounts/station-accounts-<host>.csv` (gitignored — ส่งมอบแล้วลบทิ้ง)
 - ชื่อผู้ใช้: mueang, chaiyo, pamok, photong, sawaengha, wiset, samko, bangchak, rammasak, sibuathong, ketchaiyo
@@ -254,7 +262,7 @@ cd frontend && npm audit
 | Audit | login สำเร็จ/ล้มเหลว (+ชื่อที่ลอง, IP), ดู/เพิ่ม/แก้/ลบหมุด | ✅ ตาราง `audit_log` |
 
 ### ยังต้องทำก่อนใช้จริง (เรียงตามความสำคัญ)
-1. **HTTPS บังคับ** — วาง Caddy/nginx หน้า :8080, ตั้ง `TRUST_PROXY=1` ให้ proxy ส่ง `X-Real-IP` (ไม่งั้นทุกคนจะเป็น IP เดียวกันแล้วโดนล็อกพร้อมกัน)
+1. **HTTPS บังคับ** — วาง Caddy/nginx หน้า :8080, ตั้ง `TRUST_PROXY=1` ให้ proxy ส่ง `X-Real-IP` (ไม่งั้นทุกคนจะเป็น IP เดียวกันแล้วโดนล็อกพร้อมกัน); host อื่นตั้ง `TRUST_PROXY=<ชื่อ header>` ที่ proxy เขียนทับเอง เช่น Render = `CF-Connecting-IP`
 2. **DB สิทธิ์ต่ำสุด** — ตอนนี้แอปต่อ DB ด้วย user ที่เป็น superuser (ค่า default ของ image postgres) ควรแยก role ที่มีแค่สิทธิ์บนตารางของแอป
 3. **Backup เข้ารหัส** + เก็บนอกเครื่อง + ทดสอบกู้คืน
 4. **เปลี่ยนผู้ให้บริการแผนที่พื้นหลังก่อนใช้จริง** — tile.openstreetmap.org เป็นเซิร์ฟเวอร์อาสาสมัคร ไม่รับประกันบริการ และบล็อก (403 "Access blocked") ถ้าไม่ส่ง Referer หรือใช้หนักเกินนโยบาย https://operations.osmfoundation.org/policies/tiles/

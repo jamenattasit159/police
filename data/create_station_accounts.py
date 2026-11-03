@@ -12,8 +12,15 @@ ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 ENV = {}
 if os.path.exists(os.path.join(ROOT, ".env")):
     ENV = dict(l.strip().split("=", 1) for l in open(os.path.join(ROOT, ".env"), encoding="utf8") if "=" in l and not l.startswith("#"))
-ADMIN_USER = os.environ.get("ADMIN_USER") or ENV["ADMIN_USER"]
-ADMIN_PASSWORD = os.environ.get("ADMIN_PASSWORD") or ENV["ADMIN_PASSWORD"]
+LOCAL = urllib.parse.urlparse(BASE).hostname in ("127.0.0.1", "localhost")
+if os.environ.get("ADMIN_PASSWORD"):
+    ADMIN_USER, ADMIN_PASSWORD = os.environ.get("ADMIN_USER") or ENV["ADMIN_USER"], os.environ["ADMIN_PASSWORD"]
+elif LOCAL:
+    ADMIN_USER, ADMIN_PASSWORD = ENV["ADMIN_USER"], ENV["ADMIN_PASSWORD"]
+else:  # a real host has its own admin, not the one in the local .env: ask (password is not echoed)
+    import getpass
+    ADMIN_USER = input(f"ชื่อผู้ใช้ admin ของ {BASE}: ").strip()
+    ADMIN_PASSWORD = getpass.getpass("รหัสผ่าน admin (พิมพ์แล้วจะไม่แสดง กด Enter): ")
 
 # station code (backend/schema.sql) -> login username
 USERNAMES = {

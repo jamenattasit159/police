@@ -2,12 +2,14 @@ package main
 
 import (
 	"crypto/rand"
+	"errors"
 	"math/big"
 	"net/http"
 	"strconv"
 	"strings"
 	"time"
 
+	"github.com/jackc/pgx/v5"
 	"golang.org/x/crypto/bcrypt"
 )
 
@@ -163,15 +165,17 @@ func (a *app) resetUserPassword(w http.ResponseWriter, r *http.Request, u *user)
 		serverErr(w, err)
 		return
 	}
-	tag, err := a.db.Exec(r.Context(), `UPDATE users SET password_hash=$1, must_change_password=true WHERE id=$2`, string(hash), id)
+	var username string
+	err = a.db.QueryRow(r.Context(), `UPDATE users SET password_hash=$1, must_change_password=true WHERE id=$2 RETURNING username`, string(hash), id).Scan(&username)
+	if errors.Is(err, pgx.ErrNoRows) {
+		httpErr(w, http.StatusNotFound, "ไม่พบผู้ใช้")
+		return
+	}
 	if err != nil {
 		serverErr(w, err)
 		return
 	}
-	if tag.RowsAffected() == 0 {
-		httpErr(w, http.StatusNotFound, "ไม่พบผู้ใช้")
-		return
-	}
+	a.limiter.reset("u:" + username) // the owner was likely locked out by failed logins; the new temp password should work now
 	a.db.Exec(r.Context(), `DELETE FROM sessions WHERE user_id=$1`, id)
 	a.db.Exec(r.Context(), `UPDATE password_reset_requests SET resolved_at=now(), resolved_by=$1 WHERE user_id=$2 AND resolved_at IS NULL`, u.ID, id)
 	a.audit(r, u.ID, "password_reset", nil, "user_id="+strconv.Itoa(id))
