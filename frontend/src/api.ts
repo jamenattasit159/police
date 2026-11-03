@@ -8,6 +8,7 @@ export interface Me {
   role: Role
   station_id: number | null
   station_name: string | null
+  must_change_password?: boolean
 }
 
 export interface Station {

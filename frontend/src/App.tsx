@@ -14,9 +14,10 @@ import MapPage from './MapPage'
 import Dashboard from './Dashboard'
 import Users from './Users'
 import Settings from './Settings'
-import { IconDashboard, IconLogOut, IconMap, IconSettings, IconShield, IconUsers } from './icons'
+import ChangePassword from './ChangePassword'
+import { IconDashboard, IconLock, IconLogOut, IconMap, IconSettings, IconShield, IconUsers } from './icons'
 
-type Page = 'map' | 'dashboard' | 'users' | 'settings'
+type Page = 'map' | 'dashboard' | 'users' | 'settings' | 'password'
 
 export default function App() {
   const [me, setMe] = useState<Me | null | undefined>(undefined)
@@ -74,6 +75,8 @@ export default function App() {
     setMe(null)
     setPage('map')
   }
+
+  if (me.must_change_password) return <ChangePassword me={me} forced onDone={loadMe} onLogout={logout} />
 
   const tabs: { key: Page; label: string; shortLabel: string; icon: React.ReactNode }[] = [
     { key: 'map', label: 'แผนที่ติดตาม', shortLabel: 'แผนที่', icon: <IconMap width={18} height={18} /> },
@@ -138,6 +141,10 @@ export default function App() {
               </span>
             </div>
           </div>
+          <button className="btn ghost small logout-btn" onClick={() => setPage('password')} title="เปลี่ยนรหัสผ่าน">
+            <IconLock width={15} height={15} />
+            <span className="hide-mobile">เปลี่ยนรหัสผ่าน</span>
+          </button>
           <button className="btn ghost small logout-btn" onClick={logout} title="ออกจากระบบ">
             <IconLogOut width={15} height={15} />
             <span className="hide-mobile">ออกจากระบบ</span>
@@ -148,6 +155,7 @@ export default function App() {
       <main className="main-content">
         {page === 'map' && <MapPage me={me} stations={stations} />}
         {page === 'dashboard' && <Dashboard me={me} />}
+        {page === 'password' && <ChangePassword me={me} onDone={() => setPage('map')} />}
         {page === 'users' && isAdmin(me) && <Users me={me} stations={stations} />}
         {page === 'settings' && isAdmin(me) && (
           <Settings

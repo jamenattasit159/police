@@ -19,12 +19,13 @@ import (
 const sessionTTL = 12 * time.Hour
 
 type user struct {
-	ID          int     `json:"id"`
-	Username    string  `json:"username"`
-	FullName    string  `json:"full_name"`
-	Role        string  `json:"role"`
-	StationID   *int    `json:"station_id"`
-	StationName *string `json:"station_name"`
+	ID                 int     `json:"id"`
+	Username           string  `json:"username"`
+	FullName           string  `json:"full_name"`
+	Role               string  `json:"role"`
+	StationID          *int    `json:"station_id"`
+	StationName        *string `json:"station_name"`
+	MustChangePassword bool    `json:"must_change_password"`
 }
 
 func (u *user) isAdmin() bool { return u.Role == "commander" || u.Role == "inspector" }
@@ -45,16 +46,21 @@ func (a *app) auth(h handler) http.HandlerFunc {
 		}
 		var u user
 		err = a.db.QueryRow(r.Context(), `
-			SELECT u.id, u.username, u.full_name, u.role, u.station_id, s.name
+			SELECT u.id, u.username, u.full_name, u.role, u.station_id, s.name, u.must_change_password
 			FROM sessions x JOIN users u ON u.id = x.user_id LEFT JOIN stations s ON s.id = u.station_id
 			WHERE x.token_hash = $1 AND x.expires_at > now() AND u.active`, hashToken(c.Value)).
-			Scan(&u.ID, &u.Username, &u.FullName, &u.Role, &u.StationID, &u.StationName)
+			Scan(&u.ID, &u.Username, &u.FullName, &u.Role, &u.StationID, &u.StationName, &u.MustChangePassword)
 		if errors.Is(err, pgx.ErrNoRows) {
 			httpErr(w, http.StatusUnauthorized, "กรุณาเข้าสู่ระบบ")
 			return
 		}
 		if err != nil {
 			serverErr(w, err)
+			return
+		}
+		// Enforced here, not just in the UI: until the password is changed nothing else is reachable.
+		if u.MustChangePassword && r.URL.Path != "/api/me" && r.URL.Path != "/api/password" {
+			writeJSON(w, http.StatusForbidden, map[string]string{"error": "กรุณาเปลี่ยนรหัสผ่านก่อนใช้งาน", "code": "must_change_password"})
 			return
 		}
 		h(w, r, &u)

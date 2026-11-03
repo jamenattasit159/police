@@ -80,3 +80,18 @@ INSERT INTO system_settings (key, value) VALUES
   ('system_badge_url', ''),
   ('system_notice', '')
 ON CONFLICT (key) DO NOTHING;
+
+-- Accounts made or reset by an admin must pick their own password at next login.
+ALTER TABLE users ADD COLUMN IF NOT EXISTS must_change_password BOOLEAN NOT NULL DEFAULT false;
+
+-- "Forgot password": officers ask, a commander/inspector issues a temporary password (no email/SMS in this system).
+CREATE TABLE IF NOT EXISTS password_reset_requests (
+  id          SERIAL PRIMARY KEY,
+  username    TEXT NOT NULL,
+  user_id     INT REFERENCES users(id) ON DELETE CASCADE,
+  contact     TEXT NOT NULL DEFAULT '',
+  ip          TEXT,
+  created_at  TIMESTAMPTZ NOT NULL DEFAULT now(),
+  resolved_at TIMESTAMPTZ,
+  resolved_by INT REFERENCES users(id)
+);

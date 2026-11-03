@@ -46,7 +46,7 @@ func (in *userInput) validate(creating bool) string {
 
 func (a *app) listUsers(w http.ResponseWriter, r *http.Request, u *user) {
 	rows, err := a.db.Query(r.Context(), `
-		SELECT u.id, u.username, u.full_name, u.role, u.station_id, s.name, u.active
+		SELECT u.id, u.username, u.full_name, u.role, u.station_id, s.name, u.active, u.must_change_password
 		FROM users u LEFT JOIN stations s ON s.id = u.station_id ORDER BY u.role, s.code, u.username`)
 	if err != nil {
 		serverErr(w, err)
@@ -56,7 +56,7 @@ func (a *app) listUsers(w http.ResponseWriter, r *http.Request, u *user) {
 	out := []userRow{}
 	for rows.Next() {
 		var x userRow
-		if err := rows.Scan(&x.ID, &x.Username, &x.FullName, &x.Role, &x.StationID, &x.StationName, &x.Active); err != nil {
+		if err := rows.Scan(&x.ID, &x.Username, &x.FullName, &x.Role, &x.StationID, &x.StationName, &x.Active, &x.MustChangePassword); err != nil {
 			serverErr(w, err)
 			return
 		}
@@ -81,7 +81,8 @@ func (a *app) createUser(w http.ResponseWriter, r *http.Request, u *user) {
 	}
 	var id int
 	err = a.db.QueryRow(r.Context(), `
-		INSERT INTO users (username, password_hash, full_name, role, station_id) VALUES ($1,$2,$3,$4,$5) RETURNING id`,
+		INSERT INTO users (username, password_hash, full_name, role, station_id, must_change_password)
+		VALUES ($1,$2,$3,$4,$5,true) RETURNING id`, // the admin knows this password, so the owner must replace it
 		in.Username, string(hash), in.FullName, in.Role, in.StationID).Scan(&id)
 	if err != nil {
 		if strings.Contains(err.Error(), "users_username_key") {
@@ -123,8 +124,9 @@ func (a *app) updateUser(w http.ResponseWriter, r *http.Request, u *user) {
 	}
 	tag, err := a.db.Exec(r.Context(), `
 		UPDATE users SET full_name=$1, role=$2, station_id=$3, active=$4,
-		  password_hash = CASE WHEN $5 = '' THEN password_hash ELSE $5 END
-		WHERE id=$6`, in.FullName, in.Role, in.StationID, in.Active, hash, id)
+		  password_hash = CASE WHEN $5 = '' THEN password_hash ELSE $5 END,
+		  must_change_password = CASE WHEN $5 <> '' AND $7 THEN true ELSE must_change_password END
+		WHERE id=$6`, in.FullName, in.Role, in.StationID, in.Active, hash, id, id != u.ID)
 	if err != nil {
 		serverErr(w, err)
 		return
