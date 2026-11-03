@@ -189,7 +189,8 @@ GET    /api/users   POST /api/users   PUT /api/users/{id}      (commander/inspec
   - `POST /api/password-reset-requests` (สาธารณะ, ตอบเหมือนกันทุกกรณีกันเดาชื่อผู้ใช้, จำกัด 5 ครั้ง/IP/15 นาที)
   - หน้า "จัดการผู้ใช้งาน" แสดงคำขอ + ปุ่ม "ออกรหัสชั่วคราว" / "รีเซ็ตรหัส" → รหัสแสดงครั้งเดียว ไม่เก็บ, ผู้ใช้ถูกออกจากระบบ, ต้องตั้งใหม่
 - test: `TestPasswordFlows` ใน `backend/main_test.go`
-- ข้อควรรู้: บัญชี `ADMIN_USER` ถูกตั้งรหัสตาม `.env` ทุกครั้งที่ server เริ่ม (`setupDB`) — ถ้าผู้กำกับเปลี่ยนรหัสเองในหน้าเว็บ รีสตาร์ทแล้วจะกลับเป็นค่าใน `.env`
+- `ADMIN_USER`/`ADMIN_PASSWORD` ใช้**สร้างบัญชีครั้งแรกเท่านั้น** (`setupDB`, 2026-11-03) — บัญชีที่มีแล้วไม่ถูกแตะ เปลี่ยนรหัสในเว็บแล้วรีสตาร์ท/deploy ไม่ย้อนกลับ (`TestRestartKeepsAdminPassword`; ก่อนหน้านี้เคย sync ทับทุกครั้งที่เริ่ม)
+- ลืมรหัส admin: เปลี่ยน `ADMIN_USER` เป็นชื่อใหม่ (Render → Environment หรือ `.env`) → เริ่มใหม่ได้ commander ใหม่ → เข้าไปรีเซ็ตรหัสบัญชีเดิม
 
 ### คลิปสอนใช้งาน (HyperFrames)
 - 2 คลิป: คอม `video/tutorial` (1920x1080) และมือถือ `video/tutorial-mobile` (1080x1920) — สร้างจาก `video/build_tutorial.py` (ตัวแปร `DESKTOP`, `MOBILE`)

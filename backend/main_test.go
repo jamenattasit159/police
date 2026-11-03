@@ -160,6 +160,21 @@ func TestPasswordFlows(t *testing.T) {
 	}
 }
 
+func TestRestartKeepsAdminPassword(t *testing.T) {
+	a, h := testApp(t)
+	boss := login(t, h, "boss", "boss-password")
+	if code, b := boss.do("POST", "/api/password", map[string]string{"current_password": "boss-password", "new_password": "changed-in-app-1"}); code != 200 {
+		t.Fatalf("change: %d %s", code, b)
+	}
+	if err := setupDB(context.Background(), a.db); err != nil { // what every deploy/restart runs
+		t.Fatal(err)
+	}
+	login(t, h, "boss", "changed-in-app-1")
+	if code, _ := (&client{t: t, h: h}).do("POST", "/api/login", map[string]string{"username": "boss", "password": "boss-password"}); code != 401 {
+		t.Fatalf("restart reverted the admin password to ADMIN_PASSWORD: %d", code)
+	}
+}
+
 func TestClientIP(t *testing.T) {
 	r := httptest.NewRequest("GET", "/", nil) // RemoteAddr 192.0.2.1
 	r.Header.Set("X-Real-IP", "10.0.0.1")
